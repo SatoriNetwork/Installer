@@ -5,11 +5,11 @@
 # 0. modify SatoriNode, make a new image put that image version in here (TAG)
 # 1. push SatoriNode to github, and satorinet/satorinode=vX image to docker hub
 # 2. modify this file, be sure to increment the SATORI_RUNNER_VERSION
-# 3. copy BATCH_COMMANDS to satoriserver/runner/__init__.py as a new entry
+# 3. copy BATCH_COMMANDS to satoricentral/runner/__init__.py as a new entry
 # 4. recreate satori.exe `pyinstaller --onefile --icon=favicon256.ico satori.py`
 #    a. ( cd C:\repos\Satori\installer\install )
 #    b. ( PyInstaller: 5.9.0, Python: 3.11.3   )
-# 5. copy satori.exe from /dist to satoriserver/web/static/download/
+# 5. copy satori.exe from /dist to satoricentral/web/static/download/
 # 6. push SatoriInstaller and SatoriServer, `stop`, `pull`, `restart` on server
 
 import os
