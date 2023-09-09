@@ -2,8 +2,8 @@
 # https://stackoverflow.com/questions/12059509/create-a-single-executable-from-a-python-project
 
 # upgrade Process:
-# 0. modify SatoriNode, make a new image put that image version in here (TAG)
-# 1. push SatoriNode to github, and satorinet/satorinode=vX image to docker hub
+# 0. modify SatoriNeuron, make a new image put that image version in here (TAG)
+# 1. push SatoriNeuron to github, and satorinet/satorineuron=vX image to docker hub
 # 2. modify this file, be sure to increment the SATORI_RUNNER_VERSION
 # 3. copy BATCH_COMMANDS to satoricentral/runner/__init__.py as a new entry
 # 4. recreate satori.exe `pyinstaller --onefile --icon=favicon256.ico satori.py`
@@ -32,7 +32,7 @@ BATCH_COMMANDS = [
     r"""set /a RUNNER_VERSION_NEXT=SATORI_RUNNER_VERSION+1""",
     "\n",
     # set the Satori Image name and version
-    r"""set SATORI_NODE_IMG=satorinet/satorinode""",
+    r"""set SATORI_NODE_IMG=satorinet/satorineuron""",
     "\n",
     r"""set SATORI_NODE_TAG=v1""",
     "\n",
@@ -74,8 +74,8 @@ BATCH_COMMANDS = [
     "\n",
     r"""docker ps || (goto :while)""",
     "\n",
-    # stop any running instance of satorinode, and wait for them to stop
-    r"""docker stop satorinode>nul 2>&1 & TIMEOUT /t 30 /nobreak>nul & ECHO:""",
+    # stop any running instance of satorineuron, and wait for them to stop
+    r"""docker stop satorineuron>nul 2>&1 & TIMEOUT /t 30 /nobreak>nul & ECHO:""",
     "\n",
     # clean up any images we don't need anymore
     r"""for /f "tokens=2" %%i in ('docker images %SATORI_NODE_IMG%') do if %%i NEQ %SATORI_NODE_TAG% if %%i NEQ TAG (docker rmi %SATORI_NODE_IMG%:%%i)""",
@@ -86,7 +86,7 @@ BATCH_COMMANDS = [
     # r'''start "" "http://127.0.0.1:24601"''', # moved to the end
     # "\n",
     # finally - run satori with showing its output, but not waiting for it to complete
-    r"""start /B docker run --rm -it --name satorinode -p 24601:24601 -p 24602:4001 -p 24603:5001 -p 24604:23384 -e IPFS_PATH=/SatoriNode/config/ipfs -v %APPDATA%\Satori\wallet:/SatoriNode/wallet -v %APPDATA%\Satori\config:/SatoriNode/config -v %APPDATA%\Satori\data:/SatoriNode/data -v %APPDATA%\Satori\models:/SatoriNode/models --env SATORI_RUN_MODE=prod %SATORI_NODE_IMG%:%SATORI_NODE_TAG% ./start.sh""",
+    r"""start /B docker run --rm -it --name satorineuron -p 24601:24601 -p 24602:4001 -p 24603:5001 -p 24604:23384 -e IPFS_PATH=/SatoriNeuron/config/ipfs -v %APPDATA%\Satori\wallet:/SatoriNeuron/wallet -v %APPDATA%\Satori\config:/SatoriNeuron/config -v %APPDATA%\Satori\data:/SatoriNeuron/data -v %APPDATA%\Satori\models:/SatoriNeuron/models --env SATORI_RUN_MODE=prod %SATORI_NODE_IMG%:%SATORI_NODE_TAG% ./start.sh""",
     "\n",
     # show satori in browser
     r'''TIMEOUT /t 60 /nobreak>null & start "" "http://127.0.0.1:24601"''',  # moved to the end
@@ -125,7 +125,7 @@ def setupStartup():
             batchFile.writelines(BATCH_COMMANDS)
 
 
-def startSatoriNode():
+def startSatoriNeuron():
     Popen(r'"%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\satori.bat"', shell=True)
 
 
@@ -185,4 +185,4 @@ def createLink(iconPath: str):
 setupDirectory()
 createLink(createIcon())
 setupStartup()
-startSatoriNode()
+startSatoriNeuron()
