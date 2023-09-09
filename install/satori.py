@@ -2,8 +2,8 @@
 # https://stackoverflow.com/questions/12059509/create-a-single-executable-from-a-python-project
 
 # upgrade Process:
-# 0. modify SatoriNeuron, make a new image put that image version in here (TAG)
-# 1. push SatoriNeuron to github, and satorinet/satorineuron=vX image to docker hub
+# 0. modify Satori/Neuron, make a new image put that image version in here (TAG)
+# 1. push Satori/Neuron to github, and satorinet/satorineuron=vX image to docker hub
 # 2. modify this file, be sure to increment the SATORI_RUNNER_VERSION
 # 3. copy BATCH_COMMANDS to satoricentral/runner/__init__.py as a new entry
 # 4. recreate satori.exe `pyinstaller --onefile --icon=favicon256.ico satori.py`
@@ -32,12 +32,12 @@ BATCH_COMMANDS = [
     r"""set /a RUNNER_VERSION_NEXT=SATORI_RUNNER_VERSION+1""",
     "\n",
     # set the Satori Image name and version
-    r"""set SATORI_NODE_IMG=satorinet/satorineuron""",
+    r"""set SATORI_NEURON_IMG=satorinet/satorineuron""",
     "\n",
-    r"""set SATORI_NODE_TAG=v1""",
+    r"""set SATORI_NEURON_TAG=v1""",
     "\n",
     # notifiy user of what this is
-    r"""ECHO: & ECHO: & ECHO: & ECHO ############################################################################### & ECHO ############################################################################### & ECHO ####                                                                       #### & ECHO ####                       Starting the Satori Node                        #### & ECHO ####                                                                       #### & ECHO ####           If you don't want to see Satori Node engine logs            #### & ECHO ####    you can close this window after Satori opens in a web browser.     #### & ECHO ####                                                                       #### & ECHO ####                        http://127.0.0.1:24601                         #### & ECHO ####                                                                       #### & ECHO ############################################################################### & ECHO ############################################################################### & ECHO: & ECHO: & ECHO: & ECHO Please wait, this may take several minutes & ECHO:""",
+    r"""ECHO: & ECHO: & ECHO: & ECHO ############################################################################### & ECHO ############################################################################### & ECHO ####                                                                       #### & ECHO ####                      Starting the Satori Neuron                       #### & ECHO ####                                                                       #### & ECHO ####          If you don't want to see Satori Neuron engine logs           #### & ECHO ####    you can close this window after Satori opens in a web browser.     #### & ECHO ####                                                                       #### & ECHO ####                        http://127.0.0.1:24601                         #### & ECHO ####                                                                       #### & ECHO ############################################################################### & ECHO ############################################################################### & ECHO: & ECHO: & ECHO: & ECHO Please wait, this may take several minutes & ECHO:""",
     "\n",
     # download the latest Satori runner
     r'''bitsadmin /transfer CheckingForSatoriUpdates https://satorinet.io/runner/windows/version/%RUNNER_VERSION_NEXT% "%APPDATA%\Satori\runner.bat"''',
@@ -78,7 +78,7 @@ BATCH_COMMANDS = [
     r"""docker stop satorineuron>nul 2>&1 & TIMEOUT /t 30 /nobreak>nul & ECHO:""",
     "\n",
     # clean up any images we don't need anymore
-    r"""for /f "tokens=2" %%i in ('docker images %SATORI_NODE_IMG%') do if %%i NEQ %SATORI_NODE_TAG% if %%i NEQ TAG (docker rmi %SATORI_NODE_IMG%:%%i)""",
+    r"""for /f "tokens=2" %%i in ('docker images %SATORI_NEURON_IMG%') do if %%i NEQ %SATORI_NEURON_TAG% if %%i NEQ TAG (docker rmi %SATORI_NEURON_IMG%:%%i)""",
     "\n",
     # docker is ready
     r"""echo Docker started! Running Satori...""",
@@ -86,7 +86,7 @@ BATCH_COMMANDS = [
     # r'''start "" "http://127.0.0.1:24601"''', # moved to the end
     # "\n",
     # finally - run satori with showing its output, but not waiting for it to complete
-    r"""start /B docker run --rm -it --name satorineuron -p 24601:24601 -p 24602:4001 -p 24603:5001 -p 24604:23384 -e IPFS_PATH=/SatoriNeuron/config/ipfs -v %APPDATA%\Satori\wallet:/SatoriNeuron/wallet -v %APPDATA%\Satori\config:/SatoriNeuron/config -v %APPDATA%\Satori\data:/SatoriNeuron/data -v %APPDATA%\Satori\models:/SatoriNeuron/models --env SATORI_RUN_MODE=prod %SATORI_NODE_IMG%:%SATORI_NODE_TAG% ./start.sh""",
+    r"""start /B docker run --rm -it --name satorineuron -p 24601:24601 -p 24602:4001 -p 24603:5001 -p 24604:23384 -e IPFS_PATH=/Satori/Neuron/config/ipfs -v %APPDATA%\Satori\wallet:/Satori/Neuron/wallet -v %APPDATA%\Satori\config:/Satori/Neuron/config -v %APPDATA%\Satori\data:/Satori/Neuron/data -v %APPDATA%\Satori\models:/Satori/Neuron/models --env SATORI_RUN_MODE=prod %SATORI_NEURON_IMG%:%SATORI_NEURON_TAG% ./start.sh""",
     "\n",
     # show satori in browser
     r'''TIMEOUT /t 60 /nobreak>null & start "" "http://127.0.0.1:24601"''',  # moved to the end
