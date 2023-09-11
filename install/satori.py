@@ -9,7 +9,7 @@
 # 4. recreate satori.exe `pyinstaller --onefile --icon=favicon256.ico satori.py`
 #    a. ( cd C:\repos\Satori\installer\install )
 #    b. ( PyInstaller: 5.9.0, Python: 3.11.3   )
-# 5. copy satori.exe from /dist to satoricentral/web/static/download/
+# 5. copy satori.exe from /dist to satoricentral/server/web/static/download/
 # 6. push SatoriInstaller and SatoriServer, `stop`, `pull`, `restart` on server
 
 import os
