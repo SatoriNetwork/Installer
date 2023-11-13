@@ -106,12 +106,13 @@ def setupDirectory():
 
 def setupStartup():
     ''' will setup a run script in startup folder to wait 5 minutes then run the satori container'''
-    def ui(installed=False):
+    def ui(installed=False) -> bool:
         if installed:
-            return False
+            print('Satori Installed to:', INSTALL_DIR)
+            print('Satori Startup file:', batchPath)
+            return True  # recreate links in case they download a new installer
         print('Installing Satori to:', INSTALL_DIR)
         print('Installing Satori Startup file:', batchPath)
-        time.sleep(10)  # let them read it.
         return True
 
     def createLinks():
