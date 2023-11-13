@@ -1,0 +1,284 @@
+''' 
+this is version 2 of the installer/runner. Version 1 created an exe from the 
+installer, and ran batch commands, and had those batch commands call out to the
+web to get the lastest version. all of these activities were flagged by anti-
+virus so windows thought it was uspicious.
+
+so we've had to simplify it down massively. Now the installer is the runner.
+each time it runs, it checks to see if the folders are installed in the correct
+location, if not it creates them. Then it runs the docker container. that's it.
+the :latest version of the docker container is always the one it runs.
+
+simple.
+
+it turns out anything created with pyinstaller is flagged by anti-virus at least
+on virustotal.com so, we'll need re-write this someday, but for now I think this
+wont be flagged by like windows defender so it might suffice for beta testing.
+'''
+
+# python3
+# https://stackoverflow.com/questions/12059509/create-a-single-executable-from-a-python-project
+
+# upgrade Process:
+# 0. modify Satori/Neuron, make a new image put that image version in here (TAG)
+# 1. push Satori/Neuron to github, and satorinet/satorineuron=vX image to docker hub
+# 2. modify this file
+# 3. recreate satori.exe `pyinstaller --onefile --icon=favicon256.ico satori.py`
+#    a. ( cd C:\repos\Satori\installer\runner )
+#    b. ( PyInstaller: 5.9.0, Python: 3.11.3   )
+# 4. copy satori.exe from /dist to satoricentral/server/web/static/download/
+# 5. push SatoriInstaller and SatoriServer, `stop`, `pull`, `restart` on server
+
+
+import os
+import time
+import getpass
+import time
+import docker  # pip install docker
+
+LOCAL_URL = 'http://127.0.0.1:24601'
+USER_NAME = getpass.getuser()
+INSTALL_DIR = os.path.join(os.environ.get('APPDATA', 'C:\\'), 'Satori')
+INITIATOR_DIR = r'C:\Users\%s\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup' % USER_NAME
+
+
+def welcome():
+    print(f"""
+                                       @@@@                                      
+                          @@@@@@@@@@@@@@@@@@@@@@@@@@@@@                         
+                     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                    
+                 @@@@@@@@@@@@@@@@@@@         @@@@@@@@@   @@@@@@@@                
+              @@@@@@@@@@@@@                          @@@@@  @@@@@@@             
+           @@@@@@@@@@@@                                   @@@ @@@@@@@@          
+         @@@@@@@@@@                                          @@@@@@@@@@@        
+       @@@@@@@@@@                                               @@@@@@@@@@      
+      @@@@@@@@                                                    @@@@@@@@@     
+    @@@@@@@@@                                                       @ @@@@@@    
+   @@@@@@@@                                                          @@@@@@@@@  
+  @@@@@@@@                                                            @ @@@@@@  
+  @@@@@@@@                                                               @@@@@@ 
+ @@@@@@@@                                                                 @@@@@@
+ @@@@@@@@                                                                 @@@@@@
+ @@@@@@@                                                                   @ @@@
+ @@@@@@@                                                                   @ @@@
+ @@@@@@@                                 @                                @@ @@@
+ @@@@@@@@                              @@@@@                              @@ @@@
+ @@@@@@@@                             @@@@@@@                            @@ @@@@
+  @@@@@@@@                            @@@@@@@                           @@ @@@ 
+   @@@@@@@@                            @@@@@                           @@ @@@  
+    @@@@@@@@                        @@@@@@@@@@@                       @@ @@@   
+     @@@@@@@@@                    @@@@@@@@@@@@@@@                     @ @@@    
+      @@@@@@@@@@                  @@@@@@@@@@@@@@@                    @ @@@     
+        @@@@@@@@@@               @@@ @@@@@@@@@ @@@                    @@@       
+          @@@@@@@@@@@            @@@ @@@@@@@@@ @@@                   @@         
+            @@@@@@@@@@@@   @@@@@@@@@@@@@@@@@@@@@@@@@@@@             @           
+               @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@      @@                 
+                 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@@@ @                 
+                      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                    
+                            @@@@@@@@@@@@@@@@@@@@@@@@@@@                        
+                                      
+###############################################################################
+####                                                                       ####
+####                      Starting the Satori Neuron                       ####
+####                                                                       ####
+####          If you don't want to see Satori Neuron engine logs           ####
+####    you can close this window after Satori opens in a web browser.     ####
+####                                                                       ####
+####                        {LOCAL_URL}                         ####
+####                                                                       ####
+###############################################################################
+
+Please make sure that Docker is already running. 
+And hold tight, this may take several minutes...
+
+""")
+####        Don't close this window or the Satori Neuron will stop.        ####
+####           The Satori UI will open in your web browser soon.           ####
+
+
+def setupDirectory():
+    ''' setup directory to mount to /wallet and /config and /data and /models'''
+    os.makedirs(os.path.join(INSTALL_DIR, 'wallet'), exist_ok=True)
+    os.makedirs(os.path.join(INSTALL_DIR, 'config'), exist_ok=True)
+    os.makedirs(os.path.join(INSTALL_DIR, 'data'), exist_ok=True)
+    os.makedirs(os.path.join(INSTALL_DIR, 'models'), exist_ok=True)
+
+
+def setupStartup():
+    ''' will setup a run script in startup folder to wait 5 minutes then run the satori container'''
+    def ui(installed=False):
+        if installed:
+            return False
+        print('Installing Satori to:', INSTALL_DIR)
+        print('Installing Satori Startup file:', batchPath)
+        time.sleep(10)  # let them read it.
+        return True
+
+    def createLinks():
+        import os
+        import sys
+        import win32com.client
+        import pythoncom
+
+        def createShortcut(target: str, path: str):
+            shell = win32com.client.Dispatch('WScript.Shell')
+            shortcut = shell.CreateShortcut(path)
+            shortcut.TargetPath = target
+            shortcut.WorkingDirectory = os.path.dirname(target)
+            shortcut.IconLocation = target
+            shortcut.save()
+
+        # Initialize COM
+        pythoncom.CoInitialize()
+
+        try:
+            target = sys.executable
+            startup = os.path.join(
+                os.path.join(
+                    os.environ['APPDATA'],
+                    r'Microsoft\Windows\Start Menu\Programs\Startup'),
+                'Satori.lnk')
+            createShortcut(target, path=startup)
+            desktopPath = os.path.join(os.environ['USERPROFILE'], 'desktop')
+            if not os.path.exists(desktopPath):
+                desktopPath = shell.SpecialFolders('Desktop')
+            desktop = os.path.join(desktopPath, 'Satori.lnk')
+            createShortcut(target, path=desktop)
+        finally:
+            # Release COM objects
+            shortcut = None
+            shell = None
+
+        # Uninitialize COM
+        pythoncom.CoUninitialize()
+
+    batchPath = os.path.join(INITIATOR_DIR, 'Satori.lnk')
+    if ui(installed=os.path.exists(batchPath)):
+        createLinks()
+
+
+def startSatoriNeuronNative(version: str):
+    from subprocess import Popen
+    Popen((
+        r'docker run --rm -it --name satorineuron '
+        r'-p 24601:24601 -p 24602:4001 -p 24603:5001 -p 24604:23384 '
+        r'-v %APPDATA%\Satori\wallet:/Satori/Neuron/wallet '
+        r'-v %APPDATA%\Satori\config:/Satori/Neuron/config '
+        r'-v %APPDATA%\Satori\data:/Satori/Neuron/data '
+        r'-v %APPDATA%\Satori\models:/Satori/Neuron/models '
+        # r'-v c:\repos\Satori\Neuron:/Satori/Neuron '
+        # r'-v c:\repos\Satori\Lib:/Satori/Lib '
+        # r'-v c:\repos\Satori\Rendezvous:/Satori/Rendezvous '
+        # r'-v c:\repos\Satori\Wallet:/Satori/Wallet '
+        # r'-v c:\repos\Satori\Engine:/Satori/Engine '
+        r'-e IPFS_PATH=/Satori/Neuron/config/ipfs '
+        f'--env SATORI_RUN_MODE=prod satorinet/satorineuron:{version} ./start.sh'),
+        shell=True)
+
+
+def startSatoriNeuron():
+    # '''
+    # docker run --rm -it --name satorineuron
+    #    -p 24601:24601 -p 24602:4001 -p 24603:5001 -p 24604:23384
+    #    -v %APPDATA%\Satori\wallet:/Satori/Neuron/wallet
+    #    -v %APPDATA%\Satori\config:/Satori/Neuron/config
+    #    -v %APPDATA%\Satori\data:/Satori/Neuron/data
+    #    -v %APPDATA%\Satori\models:/Satori/Neuron/models
+    #    -e IPFS_PATH=/Satori/Neuron/config/ipfs
+    #    --env SATORI_RUN_MODE=prod
+    #    satorinet/satorineuron:v1
+    #    ./start.sh
+    # docker run --rm -it --name satorineuron
+    #    -p 24601:24601 -p 24602:4001 -p 24603:5001 -p 24604:23384
+    #    -v c:\repos\Satori\Neuron:/Satori/Neuron
+    #    -v c:\repos\Satori\Lib:/Satori/Lib
+    #    -v c:\repos\Satori\Rendezvous:/Satori/Rendezvous
+    #    -v c:\repos\Satori\Wallet:/Satori/Wallet
+    #    -v c:\repos\Satori\Engine:/Satori/Engine
+    #    -e IPFS_PATH=/Satori/Neuron/config/ipfs
+    #    --env SATORI_RUN_MODE=prod
+    #    satorinet/satorineuron:v1 ./start.sh
+    # '''
+    client = docker.from_env()
+    try:
+        client.containers.run(
+            image='satorinet/satorineuron:v1',
+            command='/Satori/Neuron/satorineuron/web/start.sh',
+            name='satorineuron',
+            ports={
+                '24601/tcp': '24601', '24602/tcp': '4001',
+                '24603/tcp': '5001/tcp', '24604/tcp': '23384'},
+            # volumes=[
+            #    '%APPDATA%\Satori\wallet:/Satori/Neuron/wallet',
+            #    '%APPDATA%\Satori\config:/Satori/Neuron/config',
+            #    '%APPDATA%\Satori\data:/Satori/Neuron/data',
+            #    '%APPDATA%\Satori\models:/Satori/Neuron/models',
+            # ]
+            volumes={
+                '/repos/Satori/Neuron': {'bind': '/Satori/Neuron', 'mode': 'rw'},
+                '/repos/Satori/Lib': {'bind': '/Satori/Lib', 'mode': 'rw'},
+                '/repos/Satori/Rendezvous': {'bind': '/Satori/Rendezvous', 'mode': 'rw'},
+                '/repos/Satori/Wallet': {'bind': '/Satori/Wallet', 'mode': 'rw'},
+                '/repos/Satori/Engine': {'bind': '/Satori/Engine', 'mode': 'rw'}},
+            # environment={["SATORI_RUN_MODE=prod"]},
+            environment={'SATORI_RUN_MODE': 'prod',
+                         'IPFS_PATH': '/Satori/Neuron/config/ipfs'},
+            network_mode='bridge',
+            privileged=True,
+            restart_policy={"Name": "on-failure", "MaximumRetryCount": 5},
+            # detach=True,
+            # cpu_count=16
+            # cpu_percent=90
+        )
+    except Exception as e:
+        print('Error starting Satori Neuron:', e)
+        print('please restart the docker daemon (Docker Desktop) and try again.')
+        _awaitSeconds(30)
+        exit()
+
+
+def openInBrowserNative():
+    os.system(f'start {LOCAL_URL}')
+
+
+def openInBrowser():
+    import webbrowser
+    try:
+        # For Windows, specifying the default browser explicitly
+        browser = webbrowser.get('windows-default')
+        browser.open_new_tab(LOCAL_URL)
+    except webbrowser.Error:
+        print("Could not locate default browser.")
+        webbrowser.open(LOCAL_URL)
+
+
+def _awaitSeconds(
+    seconds: int,
+    show=True,
+    msg='this windows will close in {} seconds...',
+):
+    if show:
+        if msg is not None:
+            print(msg.format(seconds))
+        for _ in range(seconds):
+            print('.', end='')
+            time.sleep(1)
+    else:
+        time.sleep(seconds)
+
+
+def getVersion() -> str:
+    import requests
+    response = requests.get('https://satorinet.io/version/docker/')
+    if response.status_code == 200:
+        return response.text
+    return 'latest'
+
+
+welcome()
+setupDirectory()
+setupStartup()
+startSatoriNeuronNative(getVersion())
+time.sleep(60)
+openInBrowserNative()
+_awaitSeconds(60, msg=None)
