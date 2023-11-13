@@ -34,6 +34,7 @@ import os
 import time
 import getpass
 import time
+import subprocess
 import docker  # pip install docker
 
 LOCAL_URL = 'http://127.0.0.1:24601'
@@ -109,10 +110,10 @@ def setupStartup():
     def ui(installed=False) -> bool:
         if installed:
             print('Satori Installed to:', INSTALL_DIR)
-            print('Satori Startup file:', batchPath)
+            print('Satori Startup file:', batchPath, '\n')
             return True  # recreate links in case they download a new installer
         print('Installing Satori to:', INSTALL_DIR)
-        print('Installing Satori Startup file:', batchPath)
+        print('Installing Satori Startup file:', batchPath, '\n')
         return True
 
     def createLinks():
@@ -158,9 +159,15 @@ def setupStartup():
         createLinks()
 
 
-def startSatoriNeuronNative(version: str):
-    from subprocess import Popen
-    Popen((
+def startSatoriNeuronNative() -> subprocess.Popen:
+    def getVersion() -> str:
+        import requests
+        response = requests.get('https://satorinet.io/version/docker/')
+        if response.status_code == 200:
+            return response.text
+        return 'latest'
+
+    return subprocess.Popen((
         r'docker run --rm -it --name satorineuron '
         r'-p 24601:24601 -p 24602:4001 -p 24603:5001 -p 24604:23384 '
         r'-v %APPDATA%\Satori\wallet:/Satori/Neuron/wallet '
@@ -173,8 +180,8 @@ def startSatoriNeuronNative(version: str):
         # r'-v c:\repos\Satori\Wallet:/Satori/Wallet '
         # r'-v c:\repos\Satori\Engine:/Satori/Engine '
         r'-e IPFS_PATH=/Satori/Neuron/config/ipfs '
-        f'--env SATORI_RUN_MODE=prod satorinet/satorineuron:{version} ./start.sh'),
-        shell=True)
+        f'--env SATORI_RUN_MODE=prod satorinet/satorineuron:{getVersion()} ./start.sh'),
+        shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 
 def startSatoriNeuron():
@@ -253,6 +260,20 @@ def openInBrowser():
         webbrowser.open(LOCAL_URL)
 
 
+def printOutDisplay(process: subprocess.Popen) -> str:
+    errorMsg = ''
+    for line in iter(process.stdout.readline, b''):
+        line_decoded = line.decode('utf-8').rstrip()
+        print(line_decoded)
+        # 'docker: error during connect: this error may indicate that the docker daemon is not running: Post "http://%2F%2F.%2Fpipe%2Fdocker_engine/v1.24/containers/create?name=satorineuron": open //./pipe/docker_engine: The system cannot find the file specified.'
+        # "See 'docker run --help'."
+        if line_decoded.startswith('docker: error during connect'):
+            errorMsg = '\n\nSatori could not start, Docker daemon may not be running. You might have to start Docker Desktop, and try again.\n\n'
+    process.wait()
+    print(errorMsg)
+    return errorMsg
+
+
 def _awaitSeconds(
     seconds: int,
     show=True,
@@ -268,18 +289,22 @@ def _awaitSeconds(
         time.sleep(seconds)
 
 
-def getVersion() -> str:
-    import requests
-    response = requests.get('https://satorinet.io/version/docker/')
-    if response.status_code == 200:
-        return response.text
-    return 'latest'
+def startDocker() -> subprocess.Popen:
+    return subprocess.Popen((
+        r'start "docker" "C:\Program Files\Docker\Docker\Docker Desktop.exe"'),
+        shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 
 welcome()
 setupDirectory()
 setupStartup()
-startSatoriNeuronNative(getVersion())
+process = startSatoriNeuronNative()
 time.sleep(60)
 openInBrowserNative()
+errorMsg = printOutDisplay(process)
+if errorMsg != '':
+    process = startDocker()
+    time.sleep(60)
+    process = startSatoriNeuronNative()
+    printOutDisplay(process)
 _awaitSeconds(60, msg=None)
