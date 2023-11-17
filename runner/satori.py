@@ -129,6 +129,7 @@ def setupStartup():
             shortcut.WorkingDirectory = os.path.dirname(target)
             shortcut.IconLocation = target
             shortcut.save()
+            return shell, shortcut
 
         # Initialize COM
         pythoncom.CoInitialize()
@@ -140,7 +141,7 @@ def setupStartup():
                     os.environ['APPDATA'],
                     r'Microsoft\Windows\Start Menu\Programs\Startup'),
                 'Satori.lnk')
-            createShortcut(target, path=startup)
+            shell, shortcut = createShortcut(target, path=startup)
             desktopPath = os.path.join(os.environ['USERPROFILE'], 'desktop')
             if not os.path.exists(desktopPath):
                 desktopPath = shell.SpecialFolders('Desktop')
