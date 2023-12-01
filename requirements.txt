@@ -1,0 +1,5 @@
+# required by host.py udprelay:
+requests==2.31.0
+aiohttp==3.8.4 # requires Microsoft Visual C++ 14.0+ to build:
+# download at: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+# execute: vs_buildtools.exe --norestart --passive --downloadThenInstall --includeRecommended --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.MSBuildTools
