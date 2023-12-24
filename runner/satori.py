@@ -173,14 +173,21 @@ def setupStartup():
         createLinks()
 
 
-def startSatoriNeuronNative() -> subprocess.Popen:
-    def getVersion() -> str:
-        import requests
-        response = requests.get('https://satorinet.io/version/docker')
-        if response.status_code == 200:
-            return response.text
-        return 'latest'
+def getVersion() -> str:
+    import requests
+    response = requests.get('https://satorinet.io/version/docker')
+    if response.status_code == 200:
+        return response.text
+    return 'latest'
 
+
+def pullSatoriNeuron(version: str) -> subprocess.Popen:
+    return subprocess.Popen(
+        f'docker pull satorinet/satorineuron:{version}',
+        shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+
+def startSatoriNeuronNative(version: str) -> subprocess.Popen:
     return subprocess.Popen((
         r'docker run --rm -it --name satorineuron '
         r'-p 24601:24601 -p 24602:4001 -p 24603:5001 -p 24604:23384 '
@@ -194,29 +201,13 @@ def startSatoriNeuronNative() -> subprocess.Popen:
         # r'-v c:\repos\Satori\Wallet:/Satori/Wallet '
         # r'-v c:\repos\Satori\Engine:/Satori/Engine '
         r'-e IPFS_PATH=/Satori/Neuron/config/ipfs '
-        f'--env SATORI_RUN_MODE=prod satorinet/satorineuron:{getVersion()} ./start.sh'),
+        f'--env SATORI_RUN_MODE=prod satorinet/satorineuron:{version} ./start.sh'),
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 
-def startSatoriNeuronThread() -> threading.Thread:
-    def getVersion() -> str:
-        import requests
-        response = requests.get('https://satorinet.io/version/docker')
-        if response.status_code == 200:
-            return response.text
-        return 'latest'
-
+def startSatoriNeuronThread(version: str) -> threading.Thread:
     def dockerCommand():
         version = getVersion()
-        with subprocess.Popen(
-            f'docker pull satorinet/satorineuron:{version}',
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True
-        ) as proc:
-            for line in iter(proc.stdout.readline, ''):
-                print(line, end='')
         with subprocess.Popen(
             (
                 r'docker run --rm -it --name satorineuron '
@@ -241,7 +232,7 @@ def startSatoriNeuronThread() -> threading.Thread:
             for line in iter(proc.stdout.readline, ''):
                 print(line, end='')
 
-    thread = threading.Thread(target=dockerCommand)
+    thread = threading.Thread(target=dockerCommand, args=(version,))
     thread.start()
     return thread
 
@@ -708,15 +699,22 @@ def installSatori():
 
 def runSatori():
     # # process attempt - blocking, trying a threaded version
-    process = startSatoriNeuronNative()
-    time.sleep(60)
-    openInBrowserNative()
+    version = getVersion()
+    process = pullSatoriNeuron(version)
+    time.sleep(10)
     errorMsg = printOutDisplay(process)
     if errorMsg != '':
         _ = startDocker()
         time.sleep(60)
-        process = startSatoriNeuronNative()
-        printOutDisplay(process)
+        process = pullSatoriNeuron(version)
+        errorMsg = printOutDisplay(process)
+        print(errorMsg)
+    process = startSatoriNeuronNative(version)
+    time.sleep(10)
+    errorMsg = printOutDisplay(process)
+    openInBrowserNative()
+    print(errorMsg)
+    time.sleep(10)
 
     # # threading attempt - actaully we just threaded host instead
     # process = startSatoriNeuronNative()
