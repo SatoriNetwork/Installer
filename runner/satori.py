@@ -703,16 +703,15 @@ def runSatori():
     process = pullSatoriNeuron(version)
     time.sleep(10)
     errorMsg = printOutDisplay(process)
-    if errorMsg != '':
+    while errorMsg != '':
         _ = startDocker()
         time.sleep(60)
         process = pullSatoriNeuron(version)
         errorMsg = printOutDisplay(process)
-        print(errorMsg)
+    openInBrowserNative()
     process = startSatoriNeuronNative(version)
     time.sleep(10)
     errorMsg = printOutDisplay(process)
-    openInBrowserNative()
     print(errorMsg)
     time.sleep(10)
 
