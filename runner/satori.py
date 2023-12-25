@@ -480,7 +480,7 @@ class UDPRelay():
                 data, addr = await self.loop.sock_recvfrom(sock, 1024)
                 self.handle(sock, data, addr)
             except Exception as e:
-                greyPrint('listenTo erorr:', e)
+                greyPrint(f'listenTo erorr: {e}')
                 break
         # close?
 
@@ -492,7 +492,7 @@ class UDPRelay():
                 sock.setblocking(False)
                 return sock
             except Exception as e:
-                greyPrint('unable to bind to port', localPort, e)
+                greyPrint(f'unable to bind to port {localPort}, {e}')
             return None
 
         def punch(sock: socket.socket, remoteIp: str, remotePort: int):
@@ -523,7 +523,7 @@ class UDPRelay():
         remotePort: int,
         data: bytes
     ):
-        greyPrint('sending to', remoteIp, remotePort, data)
+        greyPrint(f'sending to {remoteIp}:{remotePort} {data}')
         sock.sendto(data, (remoteIp, remotePort))
 
     async def cancel(self):
