@@ -24,10 +24,14 @@ wont be flagged by like windows defender so it might suffice for beta testing.
 # 1. push Satori/Neuron to github, and satorinet/satorineuron=vX image to docker hub
 # 2. modify this file
 # 3. recreate satori.exe `pyinstaller --onefile --icon=favicon256.ico satori.py`
-#    a. ( cd C:\repos\Satori\installer\runner )
-#    b. ( PyInstaller: 5.9.0, Python: 3.11.3   )
+#   a. ( cd C:\repos\Satori\installer\runner )
+#   b. ( PyInstaller: 5.9.0, Python: 3.11.3   )
 # 4. copy satori.exe from /dist to satoricentral/server/web/static/download/
-# 5. push SatoriInstaller and SatoriServer, `stop`, `pull`, `restart` on server
+# 5. sign the downloadedable exe with signtool.exe using the smartcard:
+#   a. C:\Program Files (x86)\Windows Kits\10\App Certification Kit>
+#       signtool sign /a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256
+#       C:\repos\Satori\Central\satoricentral\server\static\download\satori.exe
+# 6. push SatoriInstaller and SatoriServer, `stop`, `pull`, `restart` on server
 
 # runner
 import os
