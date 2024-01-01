@@ -28,9 +28,9 @@ wont be flagged by like windows defender so it might suffice for beta testing.
 #   b. ( PyInstaller: 5.9.0, Python: 3.11.3   )
 # 4. copy satori.exe from /dist to satoricentral/server/web/static/download/
 # 5. sign the downloadedable exe with signtool.exe using the smartcard:
-#   a. C:\Program Files (x86)\Windows Kits\10\App Certification Kit>
-#       signtool sign /a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256
-#       C:\repos\Satori\Central\satoricentral\server\static\download\satori.exe
+#   a. cd "C:\Program Files (x86)\Windows Kits\10\App Certification Kit"
+#   b. signtool sign /a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256
+#      C:\repos\Satori\Central\satoricentral\server\static\download\satori.exe
 # 6. push SatoriInstaller and SatoriServer, `stop`, `pull`, `restart` on server
 
 # runner
