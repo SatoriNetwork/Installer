@@ -701,7 +701,7 @@ def installSatori():
     setupStartup()
 
 
-def runSatori():
+def runSatori(iteration: int = 0):
     # # process attempt - blocking, trying a threaded version
     version = getVersion()
     process = pullSatoriNeuron(version)
@@ -718,6 +718,12 @@ def runSatori():
     errorMsg = printOutDisplay(process)
     print(errorMsg)
     time.sleep(10)
+    if errorMsg != '':
+        if iteration > 10:
+            print('15-minute timeout, docker not detected, too many attempts, giving up.')
+            time.sleep(60)
+            exit()
+        runSatori(iteration+1)
 
     # # threading attempt - actaully we just threaded host instead
     # process = startSatoriNeuronNative()
