@@ -5,24 +5,18 @@
 # make scripts executable
 chmod +x satori.sh
 chmod +x satori.py
-
 # Create virtual environment
-python3 -m venv myenv
-
+command -v python3 >/dev/null 2>&1 || { echo "Python 3 not found, please install Python 3"; exit 1; }
+python3 -m venv "$HOME/.satori/env"
 # Check if the virtual environment was created successfully
-if [ -d "myenv" ]; then
+if [ -d "$HOME/.satori/env" ]; then
     echo "Virtual environment created successfully."
-
     # Activate the virtual environment
-    source myenv/bin/activate
-
+    source "$HOME/.satori/env/bin/activate"
     # Check if activation was successful
     if [ "$VIRTUAL_ENV" != "" ]; then
         echo "Virtual environment activated."
-
-        # Install requirements
-        pip install -r requirements.txt
-
+        pip install -r "$HOME/.satori/requirements.txt"
         echo "Dependencies installed."
     else
         echo "Failed to activate the virtual environment."
@@ -30,37 +24,3 @@ if [ -d "myenv" ]; then
 else
     echo "Failed to create virtual environment."
 fi
-
-
-#### Make Satori run on login ####
-
-if [ -n "$BASH_VERSION" ]; then
-    # Check for ~/.bash_profile, ~/.bash_login, then ~/.profile
-    if [ -f "$HOME/.bash_profile" ]; then
-        PROFILE_FILE="$HOME/.bash_profile"
-    elif [ -f "$HOME/.bash_login" ]; then
-        PROFILE_FILE="$HOME/.bash_login"
-    elif [ -f "$HOME/.profile" ]; then
-        PROFILE_FILE="$HOME/.profile"
-    else
-        # If none exist, default to creating ~/.bash_profile
-        PROFILE_FILE="$HOME/.bash_profile"
-    fi
-elif [ -n "$ZSH_VERSION" ]; then
-    # For Zsh, check for ~/.zprofile or ~/.profile
-    if [ -f "$HOME/.zprofile" ]; then
-        PROFILE_FILE="$HOME/.zprofile"
-    elif [ -f "$HOME/.profile" ]; then
-        PROFILE_FILE="$HOME/.profile"
-    else
-        # If none exist, default to creating ~/.zprofile
-        PROFILE_FILE="$HOME/.zprofile"
-    fi
-else
-    # Default to ~/.profile for other shells
-    PROFILE_FILE="$HOME/.profile"
-fi
-
-echo "Using profile file: $PROFILE_FILE"
-# Here you can append your command to the determined profile file
-echo "/path/to/python3 /path/to/your/script.sh" >> "$PROFILE_FILE"

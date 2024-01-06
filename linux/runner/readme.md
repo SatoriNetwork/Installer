@@ -11,19 +11,17 @@ sudo bash install.sh
 
 **manual:**
 ```
-python3 -m venv satori
-source satori/bin/activate
-python3 -m pip install -r requirements.txt
+sudo chmod +x satori.sh
+sudo chmod +x satori.py
+sudo python3 -m venv "$HOME/.satori/env"
+sudo source "$HOME/.satori/env/bin/activate"
+sudo pip install -r "$HOME/.satori/requirements.txt"
+sudo deactivate
 ```
 
 ### step 2. set up a service to keep Satori running
 
-**automated:**
-```
-sudo bash install_service.sh
-```
-
-**manual (preferred):**
+**optional:**
 It is advised to run the service as a user rather than 'root' but you'll need to ensure that the user has docker privilages. You can give docker privilages to a user with this commands:
 ```
 sudo usermod -aG docker username
@@ -33,17 +31,23 @@ then logout and login.
 
 If you want to run the service as a non-root user, uncomment and replace 'username' and 'groupname' in the satori.service file.
 
+**automated:**
 ```
-sudo cp satori.service /etc/systemd/system/satori.service
+sudo bash install_service.sh
+```
+
+**manual:**
+```
+sudo cp $HOME/.satori/satori.service /etc/systemd/system/satori.service
 sudo systemctl daemon-reload
 sudo systemctl enable satori.service
 sudo systemctl start satori.service
 ```
 
+### step 3. verify it's up and running occasionally
 
-**alternative:** run satori on login
+Try to keep it runnning as much as you can. Satori data streams that are inactive for more than a day lose their sanctioned status and are ineligible for rewards. Satori Neurons that are offline for over a month get deactivated.
+
 ```
-chmod +x ~/.satori.sh
-echo "bash ~/.satori.sh" >> ~/.bashrc
-source ~/.bashrc
+sudo systemctl status satori.service
 ```

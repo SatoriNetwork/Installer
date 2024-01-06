@@ -2,9 +2,9 @@
 
 # Absolute path to the directory of this script
 # DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-DIR="~/.satori"
+DIR="$HOME/.satori"
 # Path to the virtual environment
-VENV_PATH="$DIR/satori"
+VENV_PATH="$DIR/env"
 # Check if the virtual environment directory exists
 if [ -d "$VENV_PATH" ]; then
     # Activate the virtual environment
