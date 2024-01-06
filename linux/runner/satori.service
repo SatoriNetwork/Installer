@@ -1,0 +1,14 @@
+[Unit]
+Description=Satori Neuron
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /path/to/run.sh
+Restart=always
+# replace with docker-privileged user and group (advised)
+#User=username
+#Group=groupname
+
+[Install]
+WantedBy=multi-user.target
