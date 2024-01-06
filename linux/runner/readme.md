@@ -11,8 +11,8 @@ sudo bash install.sh
 
 **manual:**
 ```
-sudo chmod +x satori.sh
-sudo chmod +x satori.py
+sudo chmod +x $HOME/.satori/neuron.sh
+sudo chmod +x $HOME/.satori/satori.py
 sudo python3 -m venv "$HOME/.satori/env"
 sudo source "$HOME/.satori/env/bin/activate"
 sudo pip install -r "$HOME/.satori/requirements.txt"
@@ -46,7 +46,7 @@ sudo systemctl start satori.service
 
 ### step 3. verify it's up and running occasionally
 
-Try to keep it runnning as much as you can. Satori data streams that are inactive for more than a day lose their sanctioned status and are ineligible for rewards. Satori Neurons that are offline for over a month get deactivated.
+Try to keep it runnning as much as you can. Satori data streams that are active every day retain their sanctioned status and are eligible for rewards. Satori Neurons that are up and running every month remain activate and eligible for rewards.
 
 ```
 sudo systemctl status satori.service

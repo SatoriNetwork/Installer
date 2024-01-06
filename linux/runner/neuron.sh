@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Absolute path to the directory of this script
-# DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR="$HOME/.satori"
 # Path to the virtual environment
 VENV_PATH="$DIR/env"
@@ -25,12 +24,3 @@ else
     echo "Virtual environment directory not found."
     exit 1
 fi
-
-# check for shell
-#if [ -z "$PS1" ]; then
-#    return
-#fi
-# Activate virtual environment
-#source /path/to/virtualenv/bin/activate
-# Run Python script
-#/path/to/virtualenv/bin/python ~/.satori/satori.py

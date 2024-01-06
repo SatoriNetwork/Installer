@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/bin/bash /path/to/run.sh
+ExecStart=/bin/bash $HOME/.satori/neuron.sh
 Restart=always
 # replace with docker-privileged user and group (advised)
 #User=username
