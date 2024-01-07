@@ -6,9 +6,11 @@ Here we outline 4 easy steps to install Satori on Linux, the first two of which 
 
 ## Step -1. Istall docker
 
-If you haven't already, install docker.
-Follow the instructions at https://docs.docker.com/desktop/install/linux-install/
-Be sure to give docker permissions to your user account.
+If you haven't already, install the Docker Engine.
+Ubuntu: https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+Debian: https://docs.docker.com/engine/install/debian/#install-using-the-repository
+Fedora: https://docs.docker.com/engine/install/fedora/#install-using-the-repository
+Or follow the instructions at https://docs.docker.com/desktop/install/linux-install/
 
 ## Step 0. Download and unzip Satori for linux
 
@@ -36,13 +38,14 @@ cd ~
 wget -P ~/ https://satorinet.io/static/download/satori.zip
 unzip ~/satori.zip
 rm ~/satori.zip
+cd ~/.satori
 ```
 
 Now you should have this folder: `~/.satori`
 
 ## Step 1. Install dependancies
 
-Satori runs a small python script to manage the docker container and relay messages from the p2p network. It uses two packages: requests and aiohttp. We're going to install a python virtual environment to house these python dependancies.
+Satori runs a small python script to manage the docker container and relay messages from the p2p network. It uses two packages: requests and aiohttp. We're going to install a python virtual environment to house these python dependancies. You need Python3.7 or greater to run this script.
 
 **automated:**
 ```
@@ -51,7 +54,6 @@ bash install.sh
 
 **manual:**
 ```
-cd /.satori
 chmod +x ./neuron.sh
 chmod +x ./satori.py
 python3 -m venv "./satorienv"

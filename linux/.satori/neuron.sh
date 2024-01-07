@@ -3,7 +3,7 @@
 # Absolute path to the directory of this script
 DIR="$HOME/.satori"
 # Path to the virtual environment
-VENV_PATH="$DIR/env"
+VENV_PATH="$DIR/satorienv"
 # Check if the virtual environment directory exists
 if [ -d "$VENV_PATH" ]; then
     # Activate the virtual environment
