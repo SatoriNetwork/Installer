@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #### Installing Satori in virtual environment with dependencies ####
-if [ -d "./neuron.sh" ]; then
+if [ -f "./neuron.sh" ]; then
     # make scripts executable
     chmod +x ./neuron.sh
     chmod +x ./satori.py
