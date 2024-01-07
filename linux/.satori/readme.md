@@ -94,3 +94,8 @@ Try to keep it runnning as much as you can. Satori data streams that are active 
 ```
 sudo systemctl status satori.service
 ```
+
+You can even watch the logs:
+```
+journalctl -fu satori.service
+```

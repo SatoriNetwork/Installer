@@ -32,7 +32,7 @@ wont be flagged by like windows defender so it might suffice for beta testing.
 #   b. signtool sign /a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256
 #      C:\repos\Satori\Central\satoricentral\server\static\download\satori.exe
 # 6. push SatoriInstaller and SatoriServer, `stop`, `pull`, `restart` on server
-
+from typing import Union
 # runner
 import os
 import time
@@ -489,7 +489,7 @@ class UDPRelay():
         # close?
 
     async def initSockets(self):
-        def bind(localPort: int) -> socket.socket | None:
+        def bind(localPort: int) -> Union[socket.socket, None]:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             try:
                 sock.bind(('0.0.0.0', localPort))

@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Union, Dict, List, Tuple
 import traceback
 import requests  # pip install requests==2.28.1
 import aiohttp  # pip install aiohttp=3.8.4
@@ -145,7 +145,7 @@ class UDPRelay():
         # close?
 
     async def initSockets(self):
-        def bind(localPort: int) -> socket.socket | None:
+        def bind(localPort: int) -> Union[socket.socket, None]:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             try:
                 sock.bind(('0.0.0.0', localPort))
