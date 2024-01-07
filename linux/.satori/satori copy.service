@@ -4,6 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
+# replace with the location satori is installed
 ExecStart=/bin/bash $HOME/.satori/neuron.sh
 Restart=always
 # replace with docker-privileged user and group (advised)

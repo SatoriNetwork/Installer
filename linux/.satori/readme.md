@@ -1,7 +1,5 @@
 # installing Satori
 
-(copy and paste the following 'automated' or 'manual' commands into your terminal)
-
 ### step -1. install docker
 
 If you haven't already, install docker.
@@ -10,11 +8,11 @@ Be sure to give docker permissions to your user account.
 
 ### step 0. download and unzip Satori for linux
 
-If you haven't already, which you probably have, you'll need to get satori from Satorinet.io.
-make sure you unzip it into your home directory like this `~/.satori`.
-Here's how you can using the commandline.
+If you haven't already, you'll need to get satori from Satorinet.io.
+You can unzip it into your home directory or where ever you want satori installed.
+Here's how you can using the terminal.
 
-You'll need zip and unzip and wget if you don't have them already.
+First you'll need `zip` and `unzip` and `wget` if you don't have them already.
 
 for Debian/Ubunto-based systems use:
 ```
@@ -29,11 +27,14 @@ sudo yum install zip unzip wget curl
 
 Then you can download and unzip Satori.
 
-**manual:**
 ```
+cd ~
 wget -P ~/ https://satorinet.io/static/download/satori.zip
-unzip ~/satori.zip -d ~/.satori
+unzip ~/satori.zip
+rm satori.zip
 ```
+
+now you should see this folder: `~/.satori`
 
 ### step 1. install dependancies
 
@@ -44,11 +45,12 @@ sudo bash install.sh
 
 **manual:**
 ```
-sudo chmod +x $HOME/.satori/neuron.sh
-sudo chmod +x $HOME/.satori/satori.py
-sudo python3 -m venv "$HOME/.satori/env"
-sudo source "$HOME/.satori/env/bin/activate"
-sudo pip install -r "$HOME/.satori/requirements.txt"
+cd /.satori
+sudo chmod +x ./neuron.sh
+sudo chmod +x ./satori.py
+sudo python3 -m venv "./satorienv"
+sudo source "./satorienv/bin/activate"
+sudo pip install -r "./requirements.txt"
 sudo deactivate
 ```
 

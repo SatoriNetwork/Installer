@@ -19,8 +19,9 @@ redundant requirements.txt file.
 # 1. push Satori/Neuron to github, and satorinet/satorineuron=vX image to docker hub
 # 2. modify this file
 # 3. using linux subsystem for windows zip up all contents of satori folder:
-#   a. `jm@MOONTREE:/mnt/c/repos/Satori/Installer/linux$ zip -r satori.zip satori`
-# 4. copy to static folder of Central/satoricentral/server/web/static/satori.zip
+#   a. `jm@MOONTREE:/mnt/c/repos/Satori/Installer/linux$ zip -r satori.zip .satori`
+# 4. copy to download static folder of Central:
+#   a. `cp /mnt/c/repos/Satori/Installer/linux/satori.zip /mnt/c/repos/Satori/Central/satoricentral/server/static/download/`
 # 5. push Installer and Central, `cycle` on server
 
 # runner
