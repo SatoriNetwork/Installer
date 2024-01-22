@@ -10,7 +10,7 @@ CURRENT_USER=$(whoami)
 if groups $USER | grep -q docker; then
     echo "User has docker permissions."
 else
-    echo "Giving user docker permissions."
+    echo "Giving user docker permissions. Please try again."
     sudo usermod -aG docker $CURRENT_USER
     newgrp docker
 fi 
