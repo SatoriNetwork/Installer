@@ -18,8 +18,10 @@ redundant requirements.txt file.
 # 0. modify Satori/Neuron, make a new image put that image version in here (TAG)
 # 1. push Satori/Neuron to github, and satorinet/satorineuron=vX image to docker hub
 # 2. modify this file
-# 3. using linux subsystem for windows zip up all contents of satori folder:
-#   a. `jm@MOONTREE:/mnt/c/repos/Satori/Installer/linux$ zip -r satori.zip .satori`
+# 3. using windows linux subsystem (WSL) zip up all contents of satori folder:
+#   a. `cd /mnt/c/repos/Satori/Installer/linux`
+#   b. `rm -rf satori.zip`
+#   c. `zip -r satori.zip .satori`
 # 4. copy to download static folder of Central:
 #   a. `cp /mnt/c/repos/Satori/Installer/linux/satori.zip /mnt/c/repos/Satori/Central/satoricentral/server/static/download/`
 # 5. push Installer and Central, `cycle` on server
@@ -121,14 +123,14 @@ def pullSatoriNeuron(version: str) -> subprocess.Popen:
 
 def startSatoriNeuronNative(version: str) -> subprocess.Popen:
     return subprocess.Popen((
-        r'docker run --rm --name satorineuron '
-        r'-p 24601:24601 -p 24602:4001 -p 24603:5001 -p 24604:23384 '
+        r'docker run -t --rm --name satorineuron '
+        r'-p 24601:24601 '
         f'-v {os.path.join(INSTALL_DIR, "wallet")}:/Satori/Neuron/wallet '
         f'-v {os.path.join(INSTALL_DIR, "config")}:/Satori/Neuron/config '
         f'-v {os.path.join(INSTALL_DIR, "data")}:/Satori/Neuron/data '
         f'-v {os.path.join(INSTALL_DIR, "models")}:/Satori/Neuron/models '
-        r'-e IPFS_PATH=/Satori/Neuron/config/ipfs '
-        f'--env SATORI_RUN_MODE=prod satorinet/satorineuron:{version} ./start.sh'),
+        r'--env SATORI_RUN_MODE=prod '
+        f'satorinet/satorineuron:{version} ./start.sh'),
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 
@@ -148,7 +150,7 @@ def printOutDisplay(process: subprocess.Popen) -> str:
     errorMsg = ''
     for line in iter(process.stdout.readline, b''):
         line_decoded = line.decode('utf-8').rstrip()
-        print(line_decoded)
+        print(line_decoded, flush=True)
         # todo: verify this is the correct error on linux
         # 'docker: error during connect: this error may indicate that the docker daemon is not running: Post "http://%2F%2F.%2Fpipe%2Fdocker_engine/v1.24/containers/create?name=satorineuron": open //./pipe/docker_engine: The system cannot find the file specified.'
         # "See 'docker run --help'."
