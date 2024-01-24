@@ -13,7 +13,7 @@ if [ -d "$VENV_PATH" ]; then
     if [ "$VIRTUAL_ENV" = "$VENV_PATH" ]; then
         echo "Virtual environment activated."
         # Run your Python script
-        python "$DIR/satori.py"
+        python -u "$DIR/satori.py"
         # Deactivate the virtual environment
         deactivate
     else
