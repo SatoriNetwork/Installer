@@ -3,17 +3,16 @@
 ## Install Docker:
 Download Docker for Mac from https://desktop.docker.com/mac/main/arm64/Docker.dmg
 
-## Install wget:
+## Install Homebrew:
 Run these commands in your terminal:
 ```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-brew install wget
 ```
 
 ## Download Satori:
-Use wget to download Satori:
+Use curl to download Satori:
 ```
-wget https://satorinet.io/static/download/satori.zip
+curl -o satori.zip https://satorinet.io/static/download/satori.zip
 ```
 
 ## Unzip Satori:
@@ -22,7 +21,7 @@ Unzip the downloaded Satori package:
 unzip satori.zip
 ```
 
-## Install Python and Dependencies:
+## Install Python>=3.8 and Dependencies:
 Install pyenv:
 ```
 brew install pyenv
