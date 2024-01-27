@@ -22,7 +22,7 @@ pyenv install 3.12
 ## Download Satori:
 Use curl to download Satori:
 ```
-curl -o satori.zip https://satorinet.io/static/download/satori.zip
+curl -o satori.zip https://satorinet.io/static/download/mac/satori.zip
 ```
 
 ## Unzip Satori:
