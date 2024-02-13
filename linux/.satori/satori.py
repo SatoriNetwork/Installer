@@ -28,6 +28,7 @@ redundant requirements.txt file.
 
 # runner
 import os
+import time
 import getpass
 import subprocess
 import threading
@@ -173,6 +174,7 @@ def installSatori():
 
 
 def runSatori():
+    time.sleep(60)
     version = getVersion()
     process = pullSatoriNeuron(version)
     errorMsg = printOutDisplay(process)

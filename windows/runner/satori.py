@@ -703,6 +703,7 @@ def installSatori():
 
 def runSatori(iteration: int = 0):
     # # process attempt - blocking, trying a threaded version
+    time.sleep(60)
     version = getVersion()
     process = pullSatoriNeuron(version)
     time.sleep(10)

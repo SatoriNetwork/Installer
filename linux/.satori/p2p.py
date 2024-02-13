@@ -343,3 +343,6 @@ async def main():
             await udpRelay.shutdown()
         except Exception as _:
             pass
+
+if __name__ == '__main__':
+    asyncio.run(main())
