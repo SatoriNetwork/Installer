@@ -713,6 +713,7 @@ def runSatori(iteration: int = 0):
         time.sleep(60)
         process = pullSatoriNeuron(version)
         errorMsg = printOutDisplay(process)
+    time.sleep(60)
     openInBrowserNative()
     process = startSatoriNeuronNative(version)
     time.sleep(10)
