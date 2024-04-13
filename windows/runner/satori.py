@@ -21,7 +21,7 @@ wont be flagged by like windows defender so it might suffice for beta testing.
 
 # upgrade Process:
 # 0. modify Satori/Neuron, make a new image put that image version in here (TAG)
-# 1. if scripts/*.py modified, follow instructions within to update the hash
+# -. (deprecated) if scripts/*.py modified, follow instructions within to update the hash
 # 2. push Satori/Neuron to github, and satorinet/satorineuron=vX image to docker hub
 # 3. modify this file
 # 4. recreate satori.exe `pyinstaller --onefile --icon=favicon256.ico satori.py`
@@ -109,12 +109,11 @@ And hold tight, this may take several minutes...
 
 
 def setupDirectory():
-    ''' setup directories to mount to /wallet, /config, /data, /models, /scripts '''
+    ''' setup directories to mount to /wallet, /config, /data, /models '''
     os.makedirs(os.path.join(INSTALL_DIR, 'wallet'), exist_ok=True)
     os.makedirs(os.path.join(INSTALL_DIR, 'config'), exist_ok=True)
     os.makedirs(os.path.join(INSTALL_DIR, 'data'), exist_ok=True)
     os.makedirs(os.path.join(INSTALL_DIR, 'models'), exist_ok=True)
-    os.makedirs(os.path.join(INSTALL_DIR, 'scripts'), exist_ok=True)
 
 
 def setupStartup():
@@ -194,7 +193,6 @@ def startSatoriNeuronNative(version: str) -> subprocess.Popen:
         r'-v %APPDATA%\Satori\config:/Satori/Neuron/config '
         r'-v %APPDATA%\Satori\data:/Satori/Neuron/data '
         r'-v %APPDATA%\Satori\models:/Satori/Neuron/models '
-        r'-v %APPDATA%\Satori\scripts:/Satori/Neuron/scripts '
         f'--env SATORI_RUN_MODE=prod satorinet/satorineuron:{version} ./start.sh'),
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -210,7 +208,6 @@ def startSatoriNeuronThread(version: str) -> threading.Thread:
                 r'-v %APPDATA%\Satori\config:/Satori/Neuron/config '
                 r'-v %APPDATA%\Satori\data:/Satori/Neuron/data '
                 r'-v %APPDATA%\Satori\models:/Satori/Neuron/models '
-                r'-v %APPDATA%\Satori\scripts:/Satori/Neuron/scripts '
                 f'--env SATORI_RUN_MODE=prod '
                 f'satorinet/satorineuron:{version} ./start.sh'),
             shell=True,
