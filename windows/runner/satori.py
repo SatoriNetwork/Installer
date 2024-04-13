@@ -27,8 +27,9 @@ wont be flagged by like windows defender so it might suffice for beta testing.
 # 4. recreate satori.exe `pyinstaller --onefile --icon=favicon256.ico satori.py`
 #   a. ( cd C:\repos\Satori\Installer\windows\runner )
 #   b. ( PyInstaller: 5.9.0, Python: 3.11.3   )
-# 5. copy satori.exe from /dist to satoricentral/server/web/static/download/
-# 6. sign the downloadedable exe with signtool.exe using the smartcard:
+# 5. copy satori.exe from /dist to satoricentral/server/static/download/
+#   a. cp ./dist/satori.exe /repos/Satori/Central/satoricentral/server/static/download/satori.exe
+# 6. sign the downloadedable exe with signtool.exe using the smartcard (CMD):
 #   a. cd "C:\Program Files (x86)\Windows Kits\10\App Certification Kit"
 #   b. signtool sign /a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256
 #      C:\repos\Satori\Central\satoricentral\server\static\download\satori.exe
@@ -41,64 +42,7 @@ import getpass
 import subprocess
 import docker  # pip install docker
 import threading
-
-# host
-import typing as t
-import os
-import json
-import hashlib
-import traceback
-import asyncio
-import socket
-import requests  # ==2.31.0
-import aiohttp  # ==3.8.4
-
-# # standard library imports -
-# # in case our future script needs to utilize more functionality without
-# # recompiling which necesitates the need for re-download and reinstall.
-import argparse
-# import asyncio
-import collections
-import contextlib
-import copy
-import ctypes
-import datetime as dt
-import dataclasses
-import email.mime.multipart
-import email.mime.text
-import enum
-import encodings
-import functools
-# import hashlib
-import http.client
-import http.server
-import importlib
-import itertools
-# import json
-import logging
-import math
-import multiprocessing
-import multiprocessing.pool
-# import os
-import pathlib
-import pickle
-import queue
-import random
-import re
-import select
-import signal
-# import socket
-import sqlite3
-import subprocess
-import sys
-import threading
-import timeit
-import uuid
-import urllib
-import urllib.error
-import urllib.parse
-import urllib.request
-import xml
+from synapse import runSynapse
 
 
 # ################################ runner #####################################
@@ -390,47 +334,11 @@ def startDocker() -> subprocess.Popen:
         r'start "docker" "C:\Program Files\Docker\Docker\Docker Desktop.exe"'),
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-# ################################ HOST.py ####################################
-
-
-def generateHash(inputStr: str) -> str:
-    '''
-    Generates a SHA-256 hash for the given string.
-    hashlib requires bytes-like object.
-    '''
-    return hashlib.sha256(inputStr.encode('utf-8')).hexdigest()
-
-
-def runSynapse(installDir: str):
-    p2pScript = os.path.join(installDir, 'scripts', 'p2p.py')
-    if not os.path.isfile(p2pScript):
-        print(f'File not found: {p2pScript}')
-        return
-    with open(p2pScript, 'r') as file:
-        script = file.read()
-    r = requests.get('https://satorinet.io/verify/scripthash')
-    if r.status_code == 200:
-        hashes = r.json()
-        if generateHash(script) in hashes:
-            try:
-                namespace = {}
-                exec(script, namespace)
-            except Exception as e:
-                print(f'An error occurred while executing the code: {e}')
-                traceback.print_exc()
-    else:
-        print('Satori Network unreachable, check internet connection and restart. '
-              'Proceeding without p2p functionality.')
-
-
 # ################################# entry #####################################
 
+
 def runHost():
-    time.sleep(30)
-    hostThread = threading.Thread(
-        target=runSynapse,
-        args=(INITIATOR_DIR,),
-        daemon=True)
+    hostThread = threading.Thread(target=runSynapse, daemon=True)
     hostThread.start()
 
 
@@ -451,12 +359,11 @@ def runSatori(iteration: int = 0):
         time.sleep(60)
         process = pullSatoriNeuron(version)
         errorMsg = printOutDisplay(process)
-    time.sleep(60)
+    time.sleep(60*2)
     openInBrowserNative()
     process = startSatoriNeuronNative(version)
     time.sleep(10)
     errorMsg = printOutDisplay(process)
-    runHost()
     print(errorMsg)
     time.sleep(10)
     if errorMsg != '':
@@ -469,6 +376,7 @@ def runSatori(iteration: int = 0):
 
 def runForever():
     installSatori()
+    runHost()
     runSatori()
 
 

@@ -20,9 +20,11 @@ redundant requirements.txt file.
 # 2. push Satori/Neuron to github, and satorinet/satorineuron=vX image to docker hub
 # 3. modify this file
 # 4. using windows linux subsystem (WSL) zip up all contents of satori folder:
-#   a. `cd /mnt/c/repos/Satori/Installer/linux`
-#   b. `rm -rf satori.zip`
-#   c. `zip -r satori.zip .satori`
+#   ```
+#   cd /mnt/c/repos/Satori/Installer/linux
+#   rm -rf satori.zip
+#   zip -r satori.zip .satori
+#   ```
 # 5. copy to download static folder of Central:
 #   a. `cp /mnt/c/repos/Satori/Installer/linux/satori.zip /mnt/c/repos/Satori/Central/satoricentral/server/static/download/`
 # 6. push Installer and Central, `cycle` on server
@@ -98,12 +100,11 @@ And hold tight, this may take several minutes...
 
 
 def setupDirectory():
-    ''' setup directory to mount to /wallet /config /data /models /scripts'''
+    ''' setup directory to mount to /wallet /config /data /models'''
     os.makedirs(os.path.join(INSTALL_DIR, 'wallet'), exist_ok=True)
     os.makedirs(os.path.join(INSTALL_DIR, 'config'), exist_ok=True)
     os.makedirs(os.path.join(INSTALL_DIR, 'data'), exist_ok=True)
     os.makedirs(os.path.join(INSTALL_DIR, 'models'), exist_ok=True)
-    os.makedirs(os.path.join(INSTALL_DIR, 'scripts'), exist_ok=True)
 
 
 def getVersion() -> str:
@@ -128,7 +129,6 @@ def startSatoriNeuronNative(version: str) -> subprocess.Popen:
         f'-v {os.path.join(INSTALL_DIR, "config")}:/Satori/Neuron/config '
         f'-v {os.path.join(INSTALL_DIR, "data")}:/Satori/Neuron/data '
         f'-v {os.path.join(INSTALL_DIR, "models")}:/Satori/Neuron/models '
-        f'-v {os.path.join(INSTALL_DIR, "scripts")}:/Satori/Neuron/scripts '
         r'--env SATORI_RUN_MODE=prod '
         f'satorinet/satorineuron:{version} ./start.sh'),
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -164,7 +164,8 @@ def printOutDisplay(process: subprocess.Popen) -> str:
 
 
 def runHost():
-    runSynapse(INSTALL_DIR)
+    hostThread = threading.Thread(target=runSynapse, daemon=True)
+    hostThread.start()
 
 
 def installSatori():
@@ -192,8 +193,7 @@ def runSatori():
 
 def runForever():
     installSatori()
-    hostThread = threading.Thread(target=runHost, daemon=True)
-    hostThread.start()
+    runHost()
     runSatori()
 
 

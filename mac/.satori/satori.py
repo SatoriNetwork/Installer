@@ -99,12 +99,11 @@ And hold tight, this may take several minutes...
 
 
 def setupDirectory():
-    ''' setup directory to mount to /wallet /config /data /models /scripts'''
+    ''' setup directory to mount to /wallet /config /data /models'''
     os.makedirs(os.path.join(INSTALL_DIR, 'wallet'), exist_ok=True)
     os.makedirs(os.path.join(INSTALL_DIR, 'config'), exist_ok=True)
     os.makedirs(os.path.join(INSTALL_DIR, 'data'), exist_ok=True)
     os.makedirs(os.path.join(INSTALL_DIR, 'models'), exist_ok=True)
-    os.makedirs(os.path.join(INSTALL_DIR, 'scripts'), exist_ok=True)
 
 
 def getVersion() -> str:
@@ -129,7 +128,6 @@ def startSatoriNeuronNative(version: str) -> subprocess.Popen:
         f'-v {os.path.join(INSTALL_DIR, "config")}:/Satori/Neuron/config '
         f'-v {os.path.join(INSTALL_DIR, "data")}:/Satori/Neuron/data '
         f'-v {os.path.join(INSTALL_DIR, "models")}:/Satori/Neuron/models '
-        f'-v {os.path.join(INSTALL_DIR, "scripts")}:/Satori/Neuron/scripts '
         r'--env SATORI_RUN_MODE=prod '
         f'satorinet/satorineuron:{version} ./start.sh'),
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -165,7 +163,8 @@ def printOutDisplay(process: subprocess.Popen) -> str:
 
 
 def runHost():
-    runSynapse(INSTALL_DIR)
+    hostThread = threading.Thread(target=runSynapse, daemon=True)
+    hostThread.start()
 
 
 def installSatori():
@@ -192,6 +191,7 @@ def runSatori():
 
 def runForever():
     installSatori()
+    runHost()
     runSatori()
 
 
