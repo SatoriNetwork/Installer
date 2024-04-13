@@ -16,27 +16,24 @@ redundant requirements.txt file.
 
 # upgrade Process:
 # 0. modify Satori/Neuron, make a new image put that image version in here (TAG)
-# 1. push Satori/Neuron to github, and satorinet/satorineuron=vX image to docker hub
-# 2. modify this file
-# 3. using windows linux subsystem (WSL) zip up all contents of satori folder:
+# 1. if scripts/*.py modified, follow instructions within to update the hash
+# 2. push Satori/Neuron to github, and satorinet/satorineuron=vX image to docker hub
+# 3. modify this file
+# 4. using windows linux subsystem (WSL) zip up all contents of satori folder:
 #   a. `cd /mnt/c/repos/Satori/Installer/linux`
 #   b. `rm -rf satori.zip`
 #   c. `zip -r satori.zip .satori`
-# 4. copy to download static folder of Central:
+# 5. copy to download static folder of Central:
 #   a. `cp /mnt/c/repos/Satori/Installer/linux/satori.zip /mnt/c/repos/Satori/Central/satoricentral/server/static/download/`
-# 5. push Installer and Central, `cycle` on server
+# 6. push Installer and Central, `cycle` on server
 
-# runner
 import os
 import time
 import getpass
 import subprocess
 import threading
 import platform
-
-# p2p
-import asyncio
-from p2p import main
+from synapse import runSynapse
 
 # ################################ runner #####################################
 
@@ -101,11 +98,12 @@ And hold tight, this may take several minutes...
 
 
 def setupDirectory():
-    ''' setup directory to mount to /wallet and /config and /data and /models'''
+    ''' setup directory to mount to /wallet /config /data /models /scripts'''
     os.makedirs(os.path.join(INSTALL_DIR, 'wallet'), exist_ok=True)
     os.makedirs(os.path.join(INSTALL_DIR, 'config'), exist_ok=True)
     os.makedirs(os.path.join(INSTALL_DIR, 'data'), exist_ok=True)
     os.makedirs(os.path.join(INSTALL_DIR, 'models'), exist_ok=True)
+    os.makedirs(os.path.join(INSTALL_DIR, 'scripts'), exist_ok=True)
 
 
 def getVersion() -> str:
@@ -130,6 +128,7 @@ def startSatoriNeuronNative(version: str) -> subprocess.Popen:
         f'-v {os.path.join(INSTALL_DIR, "config")}:/Satori/Neuron/config '
         f'-v {os.path.join(INSTALL_DIR, "data")}:/Satori/Neuron/data '
         f'-v {os.path.join(INSTALL_DIR, "models")}:/Satori/Neuron/models '
+        f'-v {os.path.join(INSTALL_DIR, "scripts")}:/Satori/Neuron/scripts '
         r'--env SATORI_RUN_MODE=prod '
         f'satorinet/satorineuron:{version} ./start.sh'),
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -165,7 +164,7 @@ def printOutDisplay(process: subprocess.Popen) -> str:
 
 
 def runHost():
-    asyncio.run(main())
+    runSynapse(INSTALL_DIR)
 
 
 def installSatori():
@@ -174,7 +173,7 @@ def installSatori():
 
 
 def runSatori():
-    time.sleep(60)
+    time.sleep(60)  # waiting for docker on startup I think
     version = getVersion()
     process = pullSatoriNeuron(version)
     errorMsg = printOutDisplay(process)
