@@ -24,15 +24,18 @@ wont be flagged by like windows defender so it might suffice for beta testing.
 # -. (deprecated) if scripts/*.py modified, follow instructions within to update the hash
 # 2. push Satori/Neuron to github, and satorinet/satorineuron=vX image to docker hub
 # 3. modify this file
-# 4. recreate satori.exe `pyinstaller --onefile --icon=favicon256.ico satori.py`
-#   a. ( cd C:\repos\Satori\Installer\windows\runner )
-#   b. ( PyInstaller: 5.9.0, Python: 3.11.3   )
+# 4. recreate satori.exe (using PyInstaller: 5.9.0, Python: 3.11.3):
+#   ```
+#   cd C:\repos\Satori\Installer\windows\runner
+#   pyinstaller --onefile --icon=favicon256.ico satori.py
+#   ```
 # 5. copy satori.exe from /dist to satoricentral/server/static/download/
-#   a. cp ./dist/satori.exe /repos/Satori/Central/satoricentral/server/static/download/satori.exe
+#   ```
+#   cp ./dist/satori.exe /repos/Satori/Central/satoricentral/server/static/download/satori.exe
+#   ```
 # 6. sign the downloadedable exe with signtool.exe using the smartcard (CMD):
 #   a. cd "C:\Program Files (x86)\Windows Kits\10\App Certification Kit"
-#   b. signtool sign /a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256
-#      C:\repos\Satori\Central\satoricentral\server\static\download\satori.exe
+#   b. signtool sign /a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 C:\repos\Satori\Central\satoricentral\server\static\download\satori.exe
 # 7. push SatoriInstaller and SatoriServer, `stop`, `pull`, `restart` on server
 from typing import Union
 # runner
