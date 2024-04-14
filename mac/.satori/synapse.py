@@ -1,10 +1,30 @@
+'''
+we discovered that udp hole punching inside docker containers is not always
+possible because of the way the docker nat works. we thought it was.
+this host script is meant to run on the host machine.
+it will establish a sse connection with the flask server running inside
+the container. it will handle the UDP hole punching, passing data between the
+flask server and the remote peers.
+
+this linux version drops the need for asyncio and uses 2 threads instead.
+this is because we encountered an error:
+"'_UnixSelectorEventLoop' object has no attribute 'sock_recvfrom'"
+and it seemed this might be due to a python version issue:
+https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.sock_recvfrom
+given that we are unwilling to require a more recent version of python than 3.7
+we are going to use threads instead of asyncio. we will use this simplified 
+version on mac as well. luckily we only need 2 threads: one that listens to the
+neuron and relays messages to peers, and one that listens to the socket and
+relays messages from peers to the neuron.
+'''
 
 import typing as t
-import socket
-import asyncio
+import time
+import threading
 import json
-import requests  # ==2.31.0
-import aiohttp  # ==3.8.4
+import socket
+import urllib.request
+import urllib.parse
 
 
 ### CLASSES (coped from satorineuron.synergy.domain) ###
@@ -130,170 +150,140 @@ class SseTimeoutFailure(Exception):
     def __str__(self):
         return f"{self.__class__.__name__}: {self.args[0]} (Extra Data: {self.extraData})"
 
-# # written in an attempt to remove the aiohttp and requests dependencies:
-# class NeuronWatcher:
-#
-#    @staticmethod
-#    async def createNeuronListener(self):
-#        import asyncio
-#        import http.client
-#        from urllib.parse import urlparse
-#        url = UDPRelay.satoriUrl('/stream')
-#        parsed_url = urlparse(url)
-#        host = parsed_url.hostname
-#        port = parsed_url.port or (443 if parsed_url.scheme == 'https' else 80)
-#        path = parsed_url.path
-#
-#        reader, writer = await asyncio.open_connection(host, port, ssl=(parsed_url.scheme == 'https'))
-#        request_header = f"GET {path} HTTP/1.1\r\nHost: {host}\r\nConnection: close\r\n\r\n"
-#        writer.write(request_header.encode('utf-8'))
-#
-#        try:
-#            while True:  # You might want to implement a proper breaking condition
-#                line = await reader.readline()
-#                if line.startswith(b'data:'):
-#                    asyncio.create_task(self.handleNeuronMessage(
-#                        line.decode('utf-8')[5:].strip()))
-#
-#        except asyncio.TimeoutError:
-#            print("SSE connection timed out...")
-#            await self.shutdown()
-#            raise
-#        except Exception as e:
-#            print(f"An error occurred: {e}")
-#            await self.shutdown()
-#        finally:
-#            writer.close()
-#            await writer.wait_closed()
-#
-# class requests:
-#    ''' works: this could allow us to avoid using 3rd party package requests '''
-#    @staticmethod
-#    def get(url: str) -> t.Any:
-#        import urllib.request
-#        ''' Using urllib.request to open a URL and read the response '''
-#        try:
-#            with urllib.request.urlopen(url) as response:
-#                content = response.read()
-#            # Decoding the content to a string, assuming it's encoded in UTF-8
-#            content_as_string = content.decode('utf-8')
-#            return content_as_string
-#        except Exception as e:
-#            # print(f'unable to read {url}: {e}')
-#            pass
+
+class requests:
+    '''
+    simple wrapper for urllib to mimic requests.get and requests.post api.
+    made so we could remove our dependancy on reuqests library and still use 
+    the same api.
+    '''
+    @staticmethod
+    def get(url: str) -> str:
+        ''' Using urllib.request to open a URL and read the response '''
+        with urllib.request.urlopen(url) as response:
+            return response.read().decode('utf-8')
+
+    @staticmethod
+    def post(url: str, data: bytes, headers: dict = None) -> str:
+        ''' Using urllib to post with an API similar to requests.post '''
+        headers = headers or {}
+        # If data is a dictionary, encode it into bytes using urllib.parse.urlencode
+        if isinstance(data, dict):
+            data = urllib.parse.urlencode(data).encode('utf-8')
+        elif isinstance(data, str):
+            data = data.encode('utf-8')
+        request = urllib.request.Request(
+            url, data=data, headers=headers, method='POST')
+        with urllib.request.urlopen(request) as response:
+            return response.read().decode('utf-8')
 
 
-class UDPRelay():
+class Synapse():
     ''' go-between for the flask server and the remote peers '''
 
     PORT = 24600
 
     def __init__(self):
-        self.socketListener = None
+        self.running = False
         self.neuronListener = None
         self.peers: t.List[str] = []
-        self.session = aiohttp.ClientSession()
         self.socket: socket.socket = self.createSocket()
-        self.loop = asyncio.get_event_loop()
-        self.running = False
+        self.run()
 
     @staticmethod
     def satoriUrl(endpoint='') -> str:
-        return 'http://localhost:24601/udp' + endpoint
+        return 'http://localhost:24601/synapse' + endpoint
 
     ### INIT ###
 
-    async def run(self):
+    def run(self):
         ''' runs forever '''
         self.running = True
-        await self.initNeuronListener()
-        await self.initSocketListener()
+        self.initNeuronListener()
 
-    async def initNeuronListener(self):
-        await self.cancelNeuronListener()
-        self.neuronListener = asyncio.create_task(self.createNeuronListener())
+    def initNeuronListener(self):
+        self.neuronListener = threading.Thread(target=self.listenToNeuron)
+        self.neuronListener.start()
 
-    async def initSocketListener(self):
-        await self.cancelSocketListener()
-        self.socketListener = asyncio.create_task(self.listenTo(self.socket))
+    def initSocketListener(self):
+        self.listenToSocket()
 
-    async def createNeuronListener(self):
-        timeout = aiohttp.ClientTimeout(total=None, sock_read=None)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            try:
-                async with session.get(UDPRelay.satoriUrl('/stream')) as response:
-                    async for line in response.content:
-                        if line.startswith(b'data:'):
-                            asyncio.create_task(
-                                self.handleNeuronMessage(
-                                    line.decode('utf-8')[5:].strip()))
-            except asyncio.TimeoutError:
-                greyPrint('Neuron connection timed out...')
-                # await self.shutdown()
-                self.running = False
-                # raise SseTimeoutFailure()
-            except aiohttp.ClientConnectionError:
-                greyPrint('Neuron connection error...')
-                self.running = False
-                # await self.shutdown()
-                # raise SseTimeoutFailure()
-            except aiohttp.ClientError:
-                greyPrint('Neuron error...')
-                self.running = False
-                # await self.shutdown()
-                # raise SseTimeoutFailure()
+    def listenToNeuron(self):
+        try:
+            request = urllib.request.Request(Synapse.satoriUrl('/stream'))
+            with urllib.request.urlopen(request) as response:
+                for line in response:
+                    if not self.running:
+                        break
+                    decoded = line.decode('utf-8')
+                    if decoded.startswith('data:'):
+                        self.handleNeuronMessage(decoded[5:].strip())
+        except KeyboardInterrupt:
+            pass
+        except SseTimeoutFailure:
+            pass
+        except Exception as e:
+            greyPrint(f'neuron listener error: {e}')
+        finally:
+            self.shutdown()
 
     def createSocket(self) -> socket.socket:
+        def waitBeforeRaise(seconds: int):
+            '''
+            if this errors, but the neuron is reachable, it will immediately 
+            try again, and mostlikely fail for the same reason, such as perhaps
+            the port is bound elsewhere. So in order to avoid continual 
+            attempts and printouts we'll wait here before raising
+            '''
+            time.sleep(seconds)
+
         def bind(localPort: int) -> t.Union[socket.socket, None]:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             try:
                 sock.bind(('0.0.0.0', localPort))
-                sock.setblocking(False)
                 return sock
             except Exception as e:
                 greyPrint(f'unable to bind to port {localPort}, {e}')
+                waitBeforeRaise(60)
                 raise Exception('unable to create socket')
 
-        return bind(UDPRelay.PORT)
+        return bind(Synapse.PORT)
 
-    async def listenTo(self, sock: socket.socket):
+    def listenToSocket(self):
         while self.running:
             try:
-                data, address = await self.loop.sock_recvfrom(sock, 1024)
+                data, address = self.socket.recvfrom(1024)
                 if data != b'':
-                    await self.handlePeerMessage(data, address)
-            except asyncio.CancelledError:
-                greyPrint('listen task cancelled')
+                    self.handlePeerMessage(data, address)
+            except Exception as _:
                 break
-            except Exception as e:
-                greyPrint(f'listenTo error: {e}')
-                break
+        self.shutdown()
 
     ### SPEAK ###
 
-    async def speak(self, remoteIp: str, remotePort: int, data: str = ''):
+    def speak(self, remoteIp: str, remotePort: int, data: str = ''):
         # greyPrint(f'sending to {remoteIp}:{remotePort} {data}')
-        await self.loop.sock_sendto(self.socket, data.encode(), (remoteIp, remotePort))
+        self.socket.sendto(data.encode(), (remoteIp, remotePort))
 
-    async def maybeAddPeer(self, ip: str):
+    def maybeAddPeer(self, ip: str):
         if ip not in self.peers:
-            await self.addPeer(ip)
+            self.addPeer(ip)
 
-    async def addPeer(self, ip: str):
-        await self.speak(ip, UDPRelay.PORT, data=Ping().toJson)
+    def addPeer(self, ip: str):
+        self.speak(ip, Synapse.PORT, data=Ping().toJson)
         self.peers.append(ip)
 
     ### HANDLERS ###
 
-    async def handleNeuronMessage(self, message: str):
+    def handleNeuronMessage(self, message: str):
         msg = Envelope.fromJson(message)
-        await self.maybeAddPeer(msg.ip)
-        await self.speak(
+        self.maybeAddPeer(msg.ip)
+        self.speak(
             remoteIp=msg.ip,
-            remotePort=UDPRelay.PORT,
+            remotePort=Synapse.PORT,
             data=msg.vesicle.toJson)
 
-    async def handlePeerMessage(self, data: bytes, address: t.Tuple[str, int]):
+    def handlePeerMessage(self, data: bytes, address: t.Tuple[str, int]):
         # greyPrint(f'Received {data} from {address[0]}:{address[1]}')
         # # no need to ping back - it has issues anyway
         # ping = None
@@ -303,94 +293,73 @@ class UDPRelay():
         #    greyPrint(f'error parsing message: {e}')
         # if isinstance(ping, Ping):
         #    if not ping.isResponse:
-        #        await self.maybeAddPeer(address[0])
-        #        await self.speak(
+        #        self.maybeAddPeer(address[0])
+        #        self.speak(
         #            remoteIp=address[0],
-        #            remotePort=UDPRelay.PORT,
+        #            remotePort=Synapse.PORT,
         #            data=Ping(True).toJson)
         #        return
         #    if ping.isResponse:
         #        greyPrint(f'connection to {address[0]} established!')
         #        return
-        await self.relayToNeuron(data=data, ip=address[0], port=address[1])
+        self.relayToNeuron(data=data, ip=address[0], port=address[1])
 
-    async def relayToNeuron(self, data: bytes, ip: str, port: int):
+    def relayToNeuron(self, data: bytes, ip: str, port: int):
         try:
-            async with self.session.post(
-                    UDPRelay.satoriUrl('/message'),
-                    data=data,
-                    headers={
-                        'Content-Type': 'application/octet-stream',
-                        'remoteIp': ip
-                    },
-            ) as response:
-                if response.status != 200:
-                    greyPrint(
-                        f'POST request to {ip} failed with status {response.status}')
-        except aiohttp.ClientError as e:
-            # Handle client-side errors (e.g., connection problems).
-            greyPrint(f'ClientError occurred: {e}')
-        except asyncio.TimeoutError:
-            # Handle timeout errors specifically.
-            greyPrint('Request timed out')
+            response = requests.post(
+                Synapse.satoriUrl('/message'),
+                data=data,
+                headers={
+                    'Content-Type': 'application/octet-stream',
+                    'remoteIp': ip})
+            if response != 'ok':
+                raise Exception(response)
         except Exception as e:
-            # A catch-all for other exceptions - useful for debugging.
-            greyPrint(f'Unexpected error occurred: {e}')
+            greyPrint(
+                'unable to relay message to neuron: error: '
+                f'{e}, address: {ip}:{port}, data: {data}')
 
     ### SHUTDOWN ###
 
-    async def cancelSocketListener(self):
-        if self.socketListener:
-            self.socketListener.cancel()
-            try:
-                await self.socketListener
-            except asyncio.CancelledError:
-                greyPrint('Socket listener task cancelled successfully.')
-
-    async def cancelNeuronListener(self):
-        if self.neuronListener:
-            self.neuronListener.cancel()
-            try:
-                await self.neuronListener
-            except asyncio.CancelledError:
-                greyPrint('Neuron listener task cancelled successfully.')
-
-    async def shutdown(self):
+    def shutdown(self):
         self.running = False
-        await self.session.close()
-        await self.cancelSocketListener()
-        await self.cancelNeuronListener()
-        self.socket.close()
-        greyPrint('UDPRelay shutdown complete.')
+        if self.socket:
+            greyPrint('closing socket')
+            self.socket.close()
+            self.socket = None
+        if (
+            self.neuronListener != None and
+            threading.current_thread() != self.neuronListener
+        ):
+            greyPrint('closing neuron listener')
+            self.neuronListener.join()
+            self.neuronListener = None
 
 
-async def main():
-
-    async def waitForNeuron():
-        notified = False
-        while True:
-            try:
-                r = requests.get(UDPRelay.satoriUrl('/ping'))
-                if r.status_code == 200:
-                    if notified:
-                        greyPrint('established connection to Satori Neuron')
-                    return
-            except Exception as _:
-                if not notified:
-                    greyPrint('waiting for Satori Neuron to start')
-                    notified = True
-            await asyncio.sleep(1)
-
+def waitForNeuron():
+    notified = False
     while True:
-        await waitForNeuron()
-        udpRelay = UDPRelay()
-        await udpRelay.run()
-        greyPrint("Satori P2P Relay is running. Press Ctrl+C to stop.")
         try:
-            while True:
-                await asyncio.sleep(3)
-                if not udpRelay.running:
-                    raise Exception('udpRelay not running')
+            r = requests.get(Synapse.satoriUrl('/ping'))
+            if r == 'ok':
+                if notified:
+                    greyPrint(
+                        'established connection to Satori Neuron')
+                return
+        except Exception as _:
+            if not notified:
+                greyPrint('waiting for Satori Neuron')
+                notified = True
+        time.sleep(1)
+
+
+def main():
+    while True:
+        waitForNeuron()
+        try:
+            greyPrint("Satori P2P is running. Press Ctrl+C to stop.")
+            synapse = Synapse()
+            synapse.listenToSocket()
         except KeyboardInterrupt:
             pass
         except SseTimeoutFailure:
@@ -398,14 +367,17 @@ async def main():
         except Exception as _:
             pass
         finally:
-            await udpRelay.shutdown()
+            greyPrint('Satori P2P is shutting down')
+            synapse.shutdown()
+            time.sleep(5)
 
 
 def runSynapse():
     try:
-        asyncio.run(main())
+        greyPrint('Synapse started')
+        main()
     except KeyboardInterrupt:
-        print('Interrupted by user')
+        greyPrint('Synapse exited by user')
 
 
 if __name__ == '__main__':

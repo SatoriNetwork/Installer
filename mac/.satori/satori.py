@@ -150,7 +150,7 @@ def printOutDisplay(process: subprocess.Popen) -> str:
     for line in iter(process.stdout.readline, b''):
         line_decoded = line.decode('utf-8').rstrip()
         print(line_decoded, flush=True)
-        # todo: verify this is the correct error on linux
+        # is this the correct error on mac?
         # 'docker: error during connect: this error may indicate that the docker daemon is not running: Post "http://%2F%2F.%2Fpipe%2Fdocker_engine/v1.24/containers/create?name=satorineuron": open //./pipe/docker_engine: The system cannot find the file specified.'
         # "See 'docker run --help'."
         if line_decoded.startswith('docker: error during connect'):
