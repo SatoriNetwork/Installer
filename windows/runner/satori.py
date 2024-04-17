@@ -26,11 +26,13 @@ wont be flagged by like windows defender so it might suffice for beta testing.
 # 3. modify this file
 # 4. recreate satori.exe (using PyInstaller: 5.9.0, Python: 3.11.3):
 # 5. copy satori.exe from /dist to satoricentral/server/static/download/:
+# 6. copy synapse.py from ./ to satoricentral/server/static/download/:
 #   ```
 #   cd C:\repos\Satori\Installer\windows\runner
 #   pyinstaller --onefile --icon=favicon256.ico satori.py
 #   cp ./dist/satori.exe /repos/Satori/Central/satoricentral/server/static/download/satori.exe
-#
+#   cp ./synapse.py  /repos/Satori/Central/satoricentral/server/static/download/synapse.py
+#   echo "satori.exe copied to Central static download folder"
 #   ```
 # 6. sign the downloadedable exe with signtool.exe using the smartcard (CMD):
 #   ```
@@ -150,9 +152,8 @@ def setupStartup():
         try:
             target = sys.executable
             startup = os.path.join(
-                os.path.join(
-                    os.environ['APPDATA'],
-                    r'Microsoft\Windows\Start Menu\Programs\Startup'),
+                os.environ['APPDATA'],
+                r'Microsoft\Windows\Start Menu\Programs\Startup',
                 'Satori.lnk')
             shell, _shortcut = createShortcut(target, path=startup)
             desktopPath = os.path.join(os.environ['USERPROFILE'], 'desktop')
@@ -256,24 +257,30 @@ def runSatori(
     hostThread: threading.Thread = None,
     openSatoriThread: threading.Thread = None
 ):
-    def startSatori():
-        _ = startDocker()
-        time.sleep(60)
+    def startSatori(version: str):
+        process = startDocker()
+        time.sleep(10)
+        errorMsg = printOutDisplay(process)
+        if errorMsg != '':
+            return False
         process = pullSatoriNeuron(version)
         time.sleep(10)
         errorMsg = printOutDisplay(process)
+        if errorMsg != '':
+            return False
         process = startSatoriNeuron(version)
         time.sleep(10)
-        return errorMsg + printOutDisplay(process)
+        errorMsg = printOutDisplay(process)
+        if errorMsg != '':
+            return False
+        return True
 
     version = getVersion()
-    errorMsg = startSatori()
     iteration: int = 0
-    while errorMsg != '':
-        errorMsg = startSatori()
+    while startSatori(version):
+        time.sleep(60)
         iteration += 1
         if iteration > 10:
-            print(errorMsg)
             print('timeout, unable to start Docker, unable to start Satori.')
             time.sleep(60)
             if hostThread is not None:
