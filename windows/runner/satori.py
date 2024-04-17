@@ -25,17 +25,17 @@ wont be flagged by like windows defender so it might suffice for beta testing.
 # 2. push Satori/Neuron to github, and satorinet/satorineuron=vX image to docker hub
 # 3. modify this file
 # 4. recreate satori.exe (using PyInstaller: 5.9.0, Python: 3.11.3):
+# 5. copy satori.exe from /dist to satoricentral/server/static/download/:
 #   ```
 #   cd C:\repos\Satori\Installer\windows\runner
 #   pyinstaller --onefile --icon=favicon256.ico satori.py
-#   ```
-# 5. copy satori.exe from /dist to satoricentral/server/static/download/
-#   ```
 #   cp ./dist/satori.exe /repos/Satori/Central/satoricentral/server/static/download/satori.exe
 #   ```
 # 6. sign the downloadedable exe with signtool.exe using the smartcard (CMD):
-#   a. cd "C:\Program Files (x86)\Windows Kits\10\App Certification Kit"
-#   b. signtool sign /a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 C:\repos\Satori\Central\satoricentral\server\static\download\satori.exe
+#   ```
+#   cd "C:\Program Files (x86)\Windows Kits\10\App Certification Kit"
+#   signtool sign /a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 C:\repos\Satori\Central\satoricentral\server\static\download\satori.exe
+#   ```
 # 7. push SatoriInstaller and SatoriServer, `stop`, `pull`, `restart` on server
 # runner
 import os
@@ -123,7 +123,7 @@ def setupStartup():
         if installed:
             print('Satori Installed to:', INSTALL_DIR)
             print('Satori Startup file:', batchPath, '\n')
-            return True  # recreate links in case they download a new installer
+            return False
         print('Installing Satori to:', INSTALL_DIR)
         print('Installing Satori Startup file:', batchPath, '\n')
         return True
@@ -153,7 +153,7 @@ def setupStartup():
                     os.environ['APPDATA'],
                     r'Microsoft\Windows\Start Menu\Programs\Startup'),
                 'Satori.lnk')
-            shell, shortcut = createShortcut(target, path=startup)
+            shell, _shortcut = createShortcut(target, path=startup)
             desktopPath = os.path.join(os.environ['USERPROFILE'], 'desktop')
             if not os.path.exists(desktopPath):
                 desktopPath = shell.SpecialFolders('Desktop')
@@ -161,15 +161,18 @@ def setupStartup():
             createShortcut(target, path=desktop)
         finally:
             # Release COM objects
-            shortcut = None
+            _shortcut = None
             shell = None
 
         # Uninitialize COM
         pythoncom.CoUninitialize()
 
     batchPath = os.path.join(INITIATOR_DIR, 'Satori.lnk')
-    if ui(installed=os.path.exists(batchPath)):
-        createLinks()
+    # if ui(installed=os.path.exists(batchPath)):
+    #    createLinks()
+    # actually, always recreate links, in case they download a new installer:
+    ui(installed=os.path.exists(batchPath))
+    createLinks()
 
 
 def getVersion() -> str:
