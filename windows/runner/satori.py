@@ -43,7 +43,7 @@ import time
 import getpass
 import subprocess
 import threading
-from synapse import runSynapse, waitForNeuron
+from synapse import runSynapse, silentlyWaitForNeuron
 
 
 # ################################ runner #####################################
@@ -243,7 +243,7 @@ def installSatori():
 def openSatori():
 
     def waitThenOpen():
-        waitForNeuron()
+        silentlyWaitForNeuron()
         openInBrowser()
 
     openSatoriThread = threading.Thread(target=waitThenOpen)

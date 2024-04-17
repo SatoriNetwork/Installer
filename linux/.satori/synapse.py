@@ -339,8 +339,7 @@ class Synapse():
             self.neuronListener = None
 
 
-def waitForNeuron():
-    notified = False
+def waitForNeuron(notified: bool = False):
     while True:
         try:
             r = requests.get(Synapse.satoriUrl('/ping'))

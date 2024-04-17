@@ -137,7 +137,7 @@ def openInBrowserNative():
         if platform.system() == 'Linux':
             # Check if the DISPLAY environment variable is set (common in GUI environments)
             if 'DISPLAY' in os.environ:
-                waitForNeuron()
+                waitForNeuron(notified=True)
                 subprocess.run(['xdg-open', LOCAL_URL], check=True)
             else:
                 print("GUI environment not detected. Unable to open URL.")
