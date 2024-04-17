@@ -30,6 +30,7 @@ wont be flagged by like windows defender so it might suffice for beta testing.
 #   cd C:\repos\Satori\Installer\windows\runner
 #   pyinstaller --onefile --icon=favicon256.ico satori.py
 #   cp ./dist/satori.exe /repos/Satori/Central/satoricentral/server/static/download/satori.exe
+#
 #   ```
 # 6. sign the downloadedable exe with signtool.exe using the smartcard (CMD):
 #   ```
