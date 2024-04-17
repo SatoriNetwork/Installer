@@ -20,13 +20,13 @@ redundant requirements.txt file.
 # 2. push Satori/Neuron to github, and satorinet/satorineuron=vX image to docker hub
 # 3. modify this file
 # 4. using windows linux subsystem (WSL) zip up all contents of satori folder:
+# 5. copy to download static folder of Central:
 #   ````
 #   cd /mnt/c/repos/Satori/Installer/mac
 #   rm -rf satori.zip
 #   zip -r satori.zip .satori
-#   ```
-# 5. copy to download static folder of Central:
-#   a. `cp /mnt/c/repos/Satori/Installer/mac/satori.zip /mnt/c/repos/Satori/Central/satoricentral/server/static/download/mac/`
+#   cp /mnt/c/repos/Satori/Installer/mac/satori.zip /mnt/c/repos/Satori/Central/satoricentral/server/static/download/mac/
+#   ````
 # 6. push Installer and Central, `cycle` on server
 
 import os
@@ -34,7 +34,7 @@ import getpass
 import subprocess
 import threading
 import platform
-from synapse import runSynapse
+from synapse import runSynapse, requests, waitForNeuron
 
 # ################################ runner #####################################
 
@@ -107,11 +107,10 @@ def setupDirectory():
 
 
 def getVersion() -> str:
-    import requests
     response = requests.get('https://satorinet.io/version/docker')
-    if response.status_code == 200:
-        return response.text
-    return 'latest'
+    if response == '':
+        return 'latest'
+    return response
 
 
 def pullSatoriNeuron(version: str) -> subprocess.Popen:
@@ -138,6 +137,7 @@ def openInBrowserNative():
         if platform.system() == 'Linux':
             # Check if the DISPLAY environment variable is set (common in GUI environments)
             if 'DISPLAY' in os.environ:
+                waitForNeuron()
                 subprocess.run(['xdg-open', LOCAL_URL], check=True)
             else:
                 print("GUI environment not detected. Unable to open URL.")
