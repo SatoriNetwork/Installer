@@ -6,6 +6,7 @@ it will establish a sse connection with the flask server running inside
 the container. it will handle the UDP hole punching, passing data between the
 flask server and the remote peers.
 
+Why threaded? because...
 this linux version drops the need for asyncio and uses 2 threads instead.
 this is because we encountered an error:
 "'_UnixSelectorEventLoop' object has no attribute 'sock_recvfrom'"
@@ -19,22 +20,19 @@ relays messages from peers to the neuron.
 '''
 
 import typing as t
+import json
 import time
 import threading
-import json
 import socket
 import urllib.request
 import urllib.parse
 
+SYNAPSE_PORT = 24600
 
-### CLASSES (coped from satorineuron.synergy.domain) ###
-
-# don't forget to use t.Dict in place of dict and t.Union inplace of Union
-# don't forget to comment out the references to Vesicle objects other than Ping
 
 class Vesicle():
-    ''' 
-    any object sent over the wire to a peer must inhereit from this so it's 
+    '''
+    any object sent over the wire to a peer must inhereit from this so it's
     guaranteed to be convertable to dict so we can have nested dictionaries
     then convert them all to json once at the end (rather than nested json).
 
@@ -126,17 +124,6 @@ class Envelope():
         return json.dumps(self.toDict)
 
 
-### p2p functionality ###
-
-
-def greyPrint(msg: str):
-    return print(
-        "\033[90m"  # grey
-        + msg +
-        "\033[0m"  # reset
-    )
-
-
 class SseTimeoutFailure(Exception):
     '''
     sometimes we the connection to the neuron fails and we want to identify
@@ -181,21 +168,28 @@ class requests:
             return response.read().decode('utf-8')
 
 
+def greyPrint(msg: str):
+    return print(
+        "\033[90m"  # grey
+        + msg +
+        "\033[0m"  # reset
+    )
+
+
+def satoriUrl(endpoint='') -> str:
+    return 'http://localhost:24601/synapse' + endpoint
+
+
 class Synapse():
     ''' go-between for the flask server and the remote peers '''
 
-    PORT = 24600
-
-    def __init__(self):
+    def __init__(self, port: int = None):
+        self.port = port or SYNAPSE_PORT
         self.running = False
         self.neuronListener = None
         self.peers: t.List[str] = []
         self.socket: socket.socket = self.createSocket()
         self.run()
-
-    @staticmethod
-    def satoriUrl(endpoint='') -> str:
-        return 'http://localhost:24601/synapse' + endpoint
 
     ### INIT ###
 
@@ -213,7 +207,7 @@ class Synapse():
 
     def listenToNeuron(self):
         try:
-            request = urllib.request.Request(Synapse.satoriUrl('/stream'))
+            request = urllib.request.Request(satoriUrl('/stream'))
             with urllib.request.urlopen(request) as response:
                 for line in response:
                     if not self.running:
@@ -250,13 +244,14 @@ class Synapse():
                 waitBeforeRaise(60)
                 raise Exception('unable to create socket')
 
-        return bind(Synapse.PORT)
+        return bind(self.port)
 
     def listenToSocket(self):
         while self.running:
             try:
                 data, address = self.socket.recvfrom(1024)
                 if data != b'':
+                    # greyPrint(f'RECEIVED: {data}, {address}')
                     self.handlePeerMessage(data, address)
             except Exception as _:
                 break
@@ -265,7 +260,7 @@ class Synapse():
     ### SPEAK ###
 
     def speak(self, remoteIp: str, remotePort: int, data: str = ''):
-        # greyPrint(f'sending to {remoteIp}:{remotePort} {data}')
+        # greyPrint(f'SENDING: {data} {remoteIp}:{remotePort} ')
         self.socket.sendto(data.encode(), (remoteIp, remotePort))
 
     def maybeAddPeer(self, ip: str):
@@ -273,7 +268,7 @@ class Synapse():
             self.addPeer(ip)
 
     def addPeer(self, ip: str):
-        self.speak(ip, Synapse.PORT, data=Ping().toJson)
+        self.speak(ip, self.port, data=Ping().toJson)
         self.peers.append(ip)
 
     ### HANDLERS ###
@@ -283,7 +278,7 @@ class Synapse():
         self.maybeAddPeer(msg.ip)
         self.speak(
             remoteIp=msg.ip,
-            remotePort=Synapse.PORT,
+            remotePort=self.port,
             data=msg.vesicle.toJson)
 
     def handlePeerMessage(self, data: bytes, address: t.Tuple[str, int]):
@@ -299,7 +294,7 @@ class Synapse():
         #        self.maybeAddPeer(address[0])
         #        self.speak(
         #            remoteIp=address[0],
-        #            remotePort=Synapse.PORT,
+        #            remotePort=self.port,
         #            data=Ping(True).toJson)
         #        return
         #    if ping.isResponse:
@@ -310,7 +305,7 @@ class Synapse():
     def relayToNeuron(self, data: bytes, ip: str, port: int):
         try:
             response = requests.post(
-                Synapse.satoriUrl('/message'),
+                satoriUrl('/message'),
                 data=data,
                 headers={
                     'Content-Type': 'application/octet-stream',
@@ -339,28 +334,45 @@ class Synapse():
             self.neuronListener = None
 
 
-def waitForNeuron(notified: bool = False):
+def silentlyWaitForNeuron():
     while True:
         try:
-            r = requests.get(Synapse.satoriUrl('/ping'))
+            r = requests.get(satoriUrl('/ping'))
+            if r == 'ready':
+                return
             if r == 'ok':
+                return
+        except Exception as _:
+            pass
+        time.sleep(1)
+
+
+def waitForNeuron():
+    notified: bool = False
+    while True:
+        try:
+            r = requests.get(satoriUrl('/ping'))
+            if r == 'ready':
                 if notified:
                     greyPrint(
                         'established connection to Satori Neuron')
                 return
+            if r == 'ok' and not notified:
+                greyPrint('waiting for Satori Neuron...')
         except Exception as _:
-            if not notified:
-                greyPrint('waiting for Satori Neuron')
-                notified = True
+            pass
+        if not notified:
+            greyPrint('waiting for Satori Neuron...')
+            notified = True
         time.sleep(1)
 
 
-def main():
+def main(port: int = None):
     while True:
         waitForNeuron()
         try:
-            greyPrint("Satori P2P is running. Press Ctrl+C to stop.")
-            synapse = Synapse()
+            greyPrint("Satori Synapse is running. Press Ctrl+C to stop.")
+            synapse = Synapse(port)
             synapse.listenToSocket()
         except KeyboardInterrupt:
             pass
@@ -369,15 +381,15 @@ def main():
         except Exception as _:
             pass
         finally:
-            greyPrint('Satori P2P is shutting down')
+            greyPrint('Satori Synapse is shutting down')
             synapse.shutdown()
             time.sleep(5)
 
 
-def runSynapse():
+def runSynapse(port: int = None):
     try:
-        greyPrint('Synapse started')
-        main()
+        greyPrint('Synapse started (threaded version)')
+        main(port)
     except KeyboardInterrupt:
         greyPrint('Synapse exited by user')
 

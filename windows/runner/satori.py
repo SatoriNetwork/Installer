@@ -31,7 +31,6 @@ wont be flagged by like windows defender so it might suffice for beta testing.
 #   cd C:\repos\Satori\Installer\windows\runner
 #   pyinstaller --onefile --icon=favicon256.ico satori.py
 #   cp ./dist/satori.exe /repos/Satori/Central/satoricentral/server/static/download/satori.exe
-#   cp ./synapse.py  /repos/Satori/Central/satoricentral/server/static/download/synapse.py
 #   echo "satori.exe copied to Central static download folder"
 #   ```
 # 6. sign the downloadedable exe with signtool.exe using the smartcard (CMD):
@@ -46,7 +45,7 @@ import time
 import getpass
 import subprocess
 import threading
-from synapse import runSynapse, silentlyWaitForNeuron
+from satorisynapse.synapse.asynchronous import runSynapse, silentlyWaitForNeuron
 
 
 # ################################ runner #####################################

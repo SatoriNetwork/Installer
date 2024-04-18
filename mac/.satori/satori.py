@@ -34,7 +34,7 @@ import getpass
 import subprocess
 import threading
 import platform
-from synapse import runSynapse, requests, waitForNeuron
+from synapse import runSynapse, requests, silentlyWaitForNeuron
 
 # ################################ runner #####################################
 
@@ -137,7 +137,7 @@ def openInBrowserNative():
         if platform.system() == 'Linux':
             # Check if the DISPLAY environment variable is set (common in GUI environments)
             if 'DISPLAY' in os.environ:
-                waitForNeuron(notified=True)
+                silentlyWaitForNeuron()
                 subprocess.run(['xdg-open', LOCAL_URL], check=True)
             else:
                 print("GUI environment not detected. Unable to open URL.")
