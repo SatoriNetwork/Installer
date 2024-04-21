@@ -41,7 +41,9 @@ wont be flagged by like windows defender so it might suffice for beta testing.
 # 7. push SatoriInstaller and SatoriServer, `stop`, `pull`, `restart` on server
 # runner
 import os
+import sys
 import time
+import shutil
 import getpass
 import subprocess
 import threading
@@ -130,9 +132,17 @@ def setupStartup():
         print('Installing Satori Startup file:', batchPath, '\n')
         return True
 
+    def copyToInstallDir():
+        source = sys.executable
+        try:
+            destination = os.path.join(INSTALL_DIR, os.path.basename(source))
+            shutil.copy(source, destination)
+            return destination
+        except Exception as _:
+            return source
+
     def createLinks():
         import os
-        import sys
         import win32com.client
         import pythoncom
 
@@ -149,7 +159,7 @@ def setupStartup():
         pythoncom.CoInitialize()
 
         try:
-            target = sys.executable
+            target = copyToInstallDir()
             startup = os.path.join(
                 os.environ['APPDATA'],
                 r'Microsoft\Windows\Start Menu\Programs\Startup',
