@@ -26,6 +26,7 @@ redundant requirements.txt file.
 #   rm -rf satori.zip
 #   zip -r satori.zip .satori
 #   cp /mnt/c/repos/Satori/Installer/mac/satori.zip /mnt/c/repos/Satori/Central/satoricentral/server/static/download/mac/
+#   echo "done"
 #   ````
 # 6. push Installer and Central, `cycle` on server
 
@@ -113,6 +114,24 @@ def getVersion() -> str:
     return response
 
 
+def removeDanglingImages():
+    command = (
+        'docker rmi $('
+        'docker images -q '
+        '-f "reference=satorinet/satorineuron" '
+        '-f "dangling=true")')
+    try:
+        _ = subprocess.run(
+            command,
+            shell=True, capture_output=True, text=True)
+        # if result.stderr:
+        #    print("Error:", result.stderr)
+        # else:
+        #    print("Output:", result.stdout)
+    except Exception as e:
+        print("An error occurred:", e)
+
+
 def pullSatoriNeuron(version: str) -> subprocess.Popen:
     return subprocess.Popen(
         f'docker pull satorinet/satorineuron:{version}',
@@ -175,6 +194,7 @@ def installSatori():
 def runSatori():
     version = getVersion()
     process = pullSatoriNeuron(version)
+    removeDanglingImages()
     errorMsg = printOutDisplay(process)
     if errorMsg != '':
         print(

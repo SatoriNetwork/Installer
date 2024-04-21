@@ -122,7 +122,10 @@ def setupDirectory():
 
 
 def setupStartup():
-    ''' will setup a run script in startup folder to wait 5 minutes then run the satori container'''
+    ''' 
+    will setup a run script in startup folder to wait 5 minutes then run the 
+    satori container
+    '''
     def ui(installed=False) -> bool:
         if installed:
             print('Satori Installed to:', INSTALL_DIR)
@@ -194,6 +197,23 @@ def getVersion() -> str:
     return 'latest'
 
 
+def removeDanglingImages():
+    command = (
+        'docker rmi $('
+        'docker images -q '
+        '-f "reference=satorinet/satorineuron" '
+        '-f "dangling=true")')
+    try:
+        _ = subprocess.run(
+            ["powershell", "-Command", command], capture_output=True, text=True)
+        # if result.stderr:
+        #    print("Error:", result.stderr)
+        # else:
+        #    print("Output:", result.stdout)
+    except Exception as e:
+        print("unable to remove old satori images automatically:", e)
+
+
 def pullSatoriNeuron(version: str) -> subprocess.Popen:
     return subprocess.Popen(
         f'docker pull satorinet/satorineuron:{version}',
@@ -222,10 +242,15 @@ def printOutDisplay(process: subprocess.Popen) -> str:
     for line in iter(process.stdout.readline, b''):
         line_decoded = line.decode('utf-8').rstrip()
         print(line_decoded)
-        # 'docker: error during connect: this error may indicate that the docker daemon is not running: Post "http://%2F%2F.%2Fpipe%2Fdocker_engine/v1.24/containers/create?name=satorineuron": open //./pipe/docker_engine: The system cannot find the file specified.'
+        # 'docker: error during connect:
+        # this error may indicate that the docker daemon is not running:
+        # Post "http://%2F%2F.%2Fpipe%2Fdocker_engine/v1.24/containers/create?name=satorineuron":
+        # open //./pipe/docker_engine: The system cannot find the file specified.'
         # "See 'docker run --help'."
         if line_decoded.startswith('docker: error during connect'):
-            errorMsg = '\n\nSatori could not start, Docker daemon may not be running. You might have to start Docker Desktop, and try again.\n\n'
+            errorMsg = (
+                '\n\nSatori could not start, Docker daemon may not be running. '
+                'You might have to start Docker Desktop, and try again.\n\n')
     process.wait()
     print(errorMsg)
     return errorMsg
@@ -277,6 +302,7 @@ def runSatori(
         errorMsg = printOutDisplay(process)
         if errorMsg != '':
             return False
+        removeDanglingImages()
         process = startSatoriNeuron(version)
         time.sleep(10)
         errorMsg = printOutDisplay(process)
