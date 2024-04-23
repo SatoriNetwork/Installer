@@ -282,7 +282,7 @@ def openSatori():
         silentlyWaitForNeuron()
         openInBrowser()
 
-    openSatoriThread = threading.Thread(target=waitThenOpen)
+    openSatoriThread = threading.Thread(target=waitThenOpen, daemon=True)
     openSatoriThread.start()
     return openSatoriThread
 

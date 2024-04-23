@@ -23,6 +23,7 @@ if [ -f "./neuron.sh" ]; then
             echo "Failed to activate the virtual environment."
         fi
     else
+        #apt install python3-venv # user will get the message and if they're on linux they can follow the instructions
         echo "Failed to create virtual environment."
     fi
 else
