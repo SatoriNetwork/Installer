@@ -31,7 +31,8 @@ wont be flagged by like windows defender so it might suffice for beta testing.
 #   cd C:\repos\Satori\Installer\windows\runner
 #   pyinstaller --onefile --icon=favicon256.ico satori.py
 #   cp ./dist/satori.exe /repos/Satori/Central/satoricentral/server/static/download/satori.exe
-#   echo "satori.exe copied to Central static download folder"
+#   cd C:\repos\Satori\Central
+#   git status
 #   ```
 # 6. sign the downloadedable exe with signtool.exe using the smartcard (CMD):
 #   ```
@@ -138,7 +139,7 @@ def setupStartup():
     def copyToInstallDir():
         source = sys.executable
         try:
-            destination = os.path.join(INSTALL_DIR, os.path.basename(source))
+            destination = os.path.join(INSTALL_DIR, 'satori.exe')
             shutil.copy(source, destination)
             return destination
         except Exception as _:
