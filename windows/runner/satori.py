@@ -48,6 +48,7 @@ import shutil
 import getpass
 import subprocess
 import threading
+from satorisynapse.lib.domain import SYNAPSE_PORT
 from satorisynapse.synapse.asynchronous import runSynapse, silentlyWaitForNeuron
 
 
@@ -58,6 +59,8 @@ LOCAL_URL = 'http://127.0.0.1:24601'
 USER_NAME = getpass.getuser()
 INSTALL_DIR = os.path.join(os.environ.get('APPDATA', 'C:\\'), 'Satori')
 INITIATOR_DIR = r'C:\Users\%s\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup' % USER_NAME
+RESTART_PATH = os.path.join(INSTALL_DIR, 'satori.exe')
+IMAGE_VERSION = 'v1'
 
 
 def welcome():
@@ -130,18 +133,19 @@ def setupStartup():
     def ui(installed=False) -> bool:
         if installed:
             print('Satori Installed to:', INSTALL_DIR)
-            print('Satori Startup file:', batchPath, '\n')
+            print('Satori Startup file:', linkPath, '\n')
             return False
         print('Installing Satori to:', INSTALL_DIR)
-        print('Installing Satori Startup file:', batchPath, '\n')
+        print('Installing Satori Startup file:', linkPath, '\n')
         return True
 
     def copyToInstallDir():
         source = sys.executable
         try:
-            destination = os.path.join(INSTALL_DIR, 'satori.exe')
-            shutil.copy(source, destination)
-            return destination
+            global RESTART_PATH
+            RESTART_PATH = os.path.join(INSTALL_DIR, 'satori.exe')
+            shutil.copy(source, RESTART_PATH)
+            return RESTART_PATH
         except Exception as _:
             return source
 
@@ -182,20 +186,23 @@ def setupStartup():
         # Uninitialize COM
         pythoncom.CoUninitialize()
 
-    batchPath = os.path.join(INITIATOR_DIR, 'Satori.lnk')
-    # if ui(installed=os.path.exists(batchPath)):
+    linkPath = os.path.join(INITIATOR_DIR, 'Satori.lnk')
+    # if ui(installed=os.path.exists(linkPath)):
     #    createLinks()
     # actually, always recreate links, in case they download a new installer:
-    ui(installed=os.path.exists(batchPath))
+    ui(installed=os.path.exists(linkPath))
     createLinks()
 
 
-def getVersion() -> str:
+def setVersion() -> str:
+    global IMAGE_VERSION
     import requests
     response = requests.get('https://satorinet.io/version/docker')
     if response.status_code == 200:
-        return response.text
-    return 'latest'
+        IMAGE_VERSION = response.text
+    else:
+        IMAGE_VERSION = 'latest'
+    return IMAGE_VERSION
 
 
 def removeDanglingImages():
@@ -223,13 +230,13 @@ def pullSatoriNeuron(version: str) -> subprocess.Popen:
 
 def startSatoriNeuron(version: str) -> subprocess.Popen:
     return subprocess.Popen((
-        r'docker run --rm -it --name satorineuron '
-        r'-p 24601:24601 '
-        r'-v %APPDATA%\Satori\wallet:/Satori/Neuron/wallet '
-        r'-v %APPDATA%\Satori\config:/Satori/Neuron/config '
-        r'-v %APPDATA%\Satori\data:/Satori/Neuron/data '
-        r'-v %APPDATA%\Satori\models:/Satori/Neuron/models '
-        f'--env SATORI_RUN_MODE=prod '
+        'docker run --rm -it --name satorineuron '
+        '-p 24601:24601 '
+        f'-v {os.path.join(INSTALL_DIR, "wallet")}:/Satori/Neuron/wallet '
+        f'-v {os.path.join(INSTALL_DIR, "config")}:/Satori/Neuron/config '
+        f'-v {os.path.join(INSTALL_DIR, "data")}:/Satori/Neuron/data '
+        f'-v {os.path.join(INSTALL_DIR, "models")}:/Satori/Neuron/models '
+        '--env SATORI_RUN_MODE=prod '
         f'satorinet/satorineuron:{version} ./start.sh'),
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -266,7 +273,12 @@ def startDocker() -> subprocess.Popen:
 
 
 def runHost():
-    hostThread = threading.Thread(target=runSynapse, daemon=True)
+    hostThread = threading.Thread(target=runSynapse, daemon=True, args=(
+        SYNAPSE_PORT,
+        IMAGE_VERSION,
+        RESTART_PATH,
+        INSTALL_DIR,
+    ))
     hostThread.start()
     return hostThread
 
@@ -275,6 +287,7 @@ def installSatori():
     welcome()
     setupDirectory()
     setupStartup()
+    setVersion()
 
 
 def openSatori():
@@ -292,28 +305,27 @@ def runSatori(
     hostThread: threading.Thread = None,
     openSatoriThread: threading.Thread = None
 ):
-    def startSatori(version: str):
+    def startSatori():
         process = startDocker()
         time.sleep(10)
         errorMsg = printOutDisplay(process)
         if errorMsg != '':
             return False
-        process = pullSatoriNeuron(version)
+        process = pullSatoriNeuron(IMAGE_VERSION)
         time.sleep(10)
         errorMsg = printOutDisplay(process)
         if errorMsg != '':
             return False
         removeDanglingImages()
-        process = startSatoriNeuron(version)
+        process = startSatoriNeuron(IMAGE_VERSION)
         time.sleep(10)
         errorMsg = printOutDisplay(process)
         if errorMsg != '':
             return False
         return True
 
-    version = getVersion()
     iteration: int = 0
-    while startSatori(version):
+    while startSatori():
         time.sleep(60)
         iteration += 1
         if iteration > 10:

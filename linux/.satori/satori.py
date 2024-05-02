@@ -36,7 +36,7 @@ import getpass
 import subprocess
 import threading
 import platform
-from synapse import runSynapse, requests, silentlyWaitForNeuron
+from synapse import SYNAPSE_PORT, runSynapse, requests, silentlyWaitForNeuron
 
 # ################################ runner #####################################
 
@@ -44,6 +44,7 @@ from synapse import runSynapse, requests, silentlyWaitForNeuron
 LOCAL_URL = 'http://127.0.0.1:24601'
 USER_NAME = getpass.getuser()
 INSTALL_DIR = os.path.expanduser('~/.satori')
+IMAGE_VERSION = 'v1'
 
 
 def welcome():
@@ -108,11 +109,14 @@ def setupDirectory():
     os.makedirs(os.path.join(INSTALL_DIR, 'models'), exist_ok=True)
 
 
-def getVersion() -> str:
+def setVersion() -> str:
+    global IMAGE_VERSION
     response = requests.get('https://satorinet.io/version/docker')
     if response == '':
-        return 'latest'
-    return response
+        IMAGE_VERSION = 'latest'
+    else:
+        IMAGE_VERSION = response
+    return IMAGE_VERSION
 
 
 def removeDanglingImages():
@@ -183,19 +187,24 @@ def printOutDisplay(process: subprocess.Popen) -> str:
 
 
 def runHost():
-    hostThread = threading.Thread(target=runSynapse, daemon=True)
+    hostThread = threading.Thread(target=runSynapse, daemon=True, args=(
+        SYNAPSE_PORT,
+        IMAGE_VERSION,
+        os.path.abspath(__file__),
+        INSTALL_DIR,
+    ))
     hostThread.start()
 
 
 def installSatori():
     welcome()
     setupDirectory()
+    setVersion()
 
 
 def runSatori():
     time.sleep(60)  # waiting for docker on startup I think
-    version = getVersion()
-    process = pullSatoriNeuron(version)
+    process = pullSatoriNeuron(IMAGE_VERSION)
     removeDanglingImages()
     errorMsg = printOutDisplay(process)
     if errorMsg != '':
@@ -204,7 +213,7 @@ def runSatori():
             'Docker daemon may not be running. '
             'Please ensure Docker is running and try again.')
         return
-    process = startSatoriNeuronNative(version)
+    process = startSatoriNeuronNative(IMAGE_VERSION)
     errorMsg = printOutDisplay(process)
     if errorMsg != '':
         print("Error occurred while starting or running Satori Neuron.")
