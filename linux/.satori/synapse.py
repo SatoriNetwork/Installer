@@ -31,6 +31,7 @@ import urllib.request
 import urllib.parse
 
 SYNAPSE_PORT = 24600
+keepRunning = True
 
 
 class Vesicle():
@@ -466,7 +467,7 @@ def main(
     restartPath: str = None,
     installDir: str = None,
 ):
-    while True:
+    while keepRunning:
         waitForNeuron()
         try:
             greyPrint("Satori Synapse is running. Press Ctrl+C to stop.")
@@ -486,6 +487,7 @@ def main(
             greyPrint('Satori Synapse is shutting down')
             synapse.shutdown()
             time.sleep(5)
+    synapse.shutdown()
 
 
 def runSynapse(
@@ -496,7 +498,11 @@ def runSynapse(
 ):
     try:
         greyPrint('Synapse started (threaded version)')
-        main(port, version, restartPath, installDir)
+        main(
+            port=int(port) if isinstance(port, str) else port,
+            version=version,
+            restartPath=restartPath,
+            installDir=installDir)
     except KeyboardInterrupt:
         greyPrint('Synapse exited by user')
 
