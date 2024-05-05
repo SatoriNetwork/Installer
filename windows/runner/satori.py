@@ -33,6 +33,7 @@ wont be flagged by like windows defender so it might suffice for beta testing.
 #   cp ./dist/satori.exe /repos/Satori/Central/satoricentral/server/static/download/satori.exe
 #   cd C:\repos\Satori\Central
 #   git status
+#   start cmd.exe /k "cd """C:\Program Files (x86)\Windows Kits\10\App Certification Kit""""
 #   ```
 # 6. sign the downloadedable exe with signtool.exe using the smartcard (CMD):
 #   ```
