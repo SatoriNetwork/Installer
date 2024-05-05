@@ -508,4 +508,29 @@ def runSynapse(
 
 
 if __name__ == '__main__':
-    runSynapse()
+    if len(sys.argv) == 5:
+        runSynapse(
+            port=sys.argv[1],
+            version=sys.argv[2],
+            restartPath=sys.argv[3],
+            installDir=sys.argv[4],)
+        exit(0)
+    elif len(sys.argv) == 4:
+        runSynapse(
+            port=sys.argv[1],
+            version=sys.argv[2],
+            restartPath=sys.argv[3])
+        exit(0)
+    elif len(sys.argv) == 3:
+        runSynapse(port=sys.argv[1], version=sys.argv[2])
+        exit(0)
+    elif len(sys.argv) == 2:
+        if sys.argv[1] == 'help':
+            print(
+                'Usage: python3 runSynapse.py [port] [version (docker image version)] [restartPath]')
+        else:
+            runSynapse(port=sys.argv[1])
+        exit(0)
+    else:
+        runSynapse()
+        exit(0)
