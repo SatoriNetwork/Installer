@@ -45,6 +45,7 @@ USER_NAME = getpass.getuser()
 INSTALL_DIR = os.path.expanduser('~/.satori')
 IMAGE_VERSION = 'v1'
 
+
 def welcome():
     print(f"""
                                       @@@@                                     
@@ -149,7 +150,7 @@ def startSatoriNeuronNative(version: str) -> subprocess.Popen:
         f'-v {os.path.join(INSTALL_DIR, "config")}:/Satori/Neuron/config '
         f'-v {os.path.join(INSTALL_DIR, "data")}:/Satori/Neuron/data '
         f'-v {os.path.join(INSTALL_DIR, "models")}:/Satori/Neuron/models '
-        r'--env SATORI_RUN_MODE=prod '
+        r'--env ENV=prod '
         f'satorinet/satorineuron:{version} ./start.sh'),
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
