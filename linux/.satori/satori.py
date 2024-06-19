@@ -144,15 +144,24 @@ def pullSatoriNeuron(version: str) -> subprocess.Popen:
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 
+def getConfigEnv(configPath: str) -> str:
+    if os.path.exists(configPath):
+        with open(configPath, mode='r') as f:
+            for line in f:
+                if line.startswith('env:'):
+                    return line.split(':')[1].strip()
+    return 'prod'
+
+
 def startSatoriNeuronNative(version: str) -> subprocess.Popen:
     return subprocess.Popen((
-        r'docker run -t --rm --name satorineuron '
-        r'-p 24601:24601 '
+        'docker run -t --rm --name satorineuron '
+        '-p 24601:24601 '
         f'-v {os.path.join(INSTALL_DIR, "wallet")}:/Satori/Neuron/wallet '
         f'-v {os.path.join(INSTALL_DIR, "config")}:/Satori/Neuron/config '
         f'-v {os.path.join(INSTALL_DIR, "data")}:/Satori/Neuron/data '
         f'-v {os.path.join(INSTALL_DIR, "models")}:/Satori/Neuron/models '
-        r'--env ENV=prod '
+        f'--env ENV={getConfigEnv(os.path.join(INSTALL_DIR, "config", "config.yaml"))} '
         f'satorinet/satorineuron:{version} ./start.sh'),
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 

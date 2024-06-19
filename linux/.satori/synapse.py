@@ -332,11 +332,19 @@ class Synapse():
 
     def handleNeuronMessage(self, message: str):
 
+        def getConfigEnv(configPath: str) -> str:
+            if os.path.exists(configPath):
+                with open(configPath, mode='r') as f:
+                    for line in f:
+                        if line.startswith('env:'):
+                            return line.split(':')[1].strip()
+            return 'prod'
+
         def handleSignal(signal: Signal):
             if signal.restart:
                 greyPrint('restarting Satori Neuron...')
-                subprocess.Popen('docker stop satorineuron')
-                time.sleep(30)
+                process = subprocess.Popen('docker stop satorineuron')
+                process.wait()
                 if self.restartPath not in [None, '', 'none', 'null', 'None']:
                     subprocess.Popen(
                         ["gnome-terminal", "--", sys.executable, self.restartPath])
@@ -346,9 +354,9 @@ class Synapse():
                         pass
                     exit()
                 elif self.installDir not in [None, '', 'none', 'null', 'None']:
-                    subprocess.Popen(
+                    process = subprocess.Popen(
                         f'docker pull satorinet/satorineuron:{self.version}')
-                    time.sleep(60)
+                    process.wait()
                     subprocess.Popen((
                         'docker run --rm -it --name satorineuron '
                         '-p 24601:24601 '
@@ -356,13 +364,13 @@ class Synapse():
                         f'-v {os.path.join(self.installDir, "config")}:/Satori/Neuron/config '
                         f'-v {os.path.join(self.installDir, "data")}:/Satori/Neuron/data '
                         f'-v {os.path.join(self.installDir, "models")}:/Satori/Neuron/models '
-                        '--env ENV=prod '
+                        f'--env ENV={getConfigEnv(os.path.join(self.installDir, "config", "config.yaml"))} '
                         f'satorinet/satorineuron:{self.version} ./start.sh'),)
                     raise Exception('restarting neuron...')
             if signal.shutdown:
                 greyPrint('shutting down Satori Neuron...')
-                subprocess.Popen('docker stop satorineuron')
-                time.sleep(30)
+                process = subprocess.Popen('docker stop satorineuron')
+                process.wait()
                 self.shutdown()
                 exit()
 

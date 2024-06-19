@@ -229,6 +229,15 @@ def pullSatoriNeuron(version: str) -> subprocess.Popen:
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 
+def getConfigEnv(configPath: str) -> str:
+    if os.path.exists(configPath):
+        with open(configPath, mode='r') as f:
+            for line in f:
+                if line.startswith('env:'):
+                    return line.split(':')[1].strip()
+    return 'prod'
+
+
 def startSatoriNeuron(version: str) -> subprocess.Popen:
     return subprocess.Popen((
         'docker run --rm -it --name satorineuron '
@@ -237,7 +246,7 @@ def startSatoriNeuron(version: str) -> subprocess.Popen:
         f'-v {os.path.join(INSTALL_DIR, "config")}:/Satori/Neuron/config '
         f'-v {os.path.join(INSTALL_DIR, "data")}:/Satori/Neuron/data '
         f'-v {os.path.join(INSTALL_DIR, "models")}:/Satori/Neuron/models '
-        '--env ENV=prod '
+        f'--env ENV={getConfigEnv(os.path.join(INSTALL_DIR, "config", "config.yaml"))} '
         f'satorinet/satorineuron:{version} ./start.sh'),
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -269,6 +278,23 @@ def startDocker() -> subprocess.Popen:
     return subprocess.Popen((
         r'start "docker" "C:\Program Files\Docker\Docker\Docker Desktop.exe"'),
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+
+def waitForDockerDaemon():
+    x = 60*10
+    while x > 0:
+        result = subprocess.run(
+            ['docker', 'info'],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        )
+        if result.returncode == 0:
+            print("Docker daemon is running.")
+            break
+        if x % 60 == 0:
+            print("Waiting for Docker daemon to start...")
+        time.sleep(1)
+        x -= 1
+
 
 # ################################# entry #####################################
 
@@ -308,18 +334,16 @@ def runSatori(
 ):
     def startSatori():
         process = startDocker()
-        time.sleep(10)
         errorMsg = printOutDisplay(process)
+        waitForDockerDaemon()
         if errorMsg != '':
             return False
         process = pullSatoriNeuron(IMAGE_VERSION)
-        time.sleep(10)
         errorMsg = printOutDisplay(process)
         if errorMsg != '':
             return False
         removeDanglingImages()
         process = startSatoriNeuron(IMAGE_VERSION)
-        time.sleep(10)
         errorMsg = printOutDisplay(process)
         if errorMsg != '':
             return False
