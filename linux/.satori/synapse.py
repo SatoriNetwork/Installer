@@ -341,9 +341,10 @@ class Synapse():
             return 'prod'
 
         def handleSignal(signal: Signal):
+            global keepRunning
             if signal.restart:
                 greyPrint('restarting Satori Neuron...')
-                process = subprocess.Popen('docker stop satorineuron')
+                process = subprocess.Popen(['docker', 'stop', 'satorineuron'])
                 process.wait()
                 if self.restartPath not in [None, '', 'none', 'null', 'None']:
                     subprocess.Popen(
@@ -351,28 +352,32 @@ class Synapse():
                     try:
                         self.shutdown()
                     except Exception as _:
-                        pass
-                    exit()
+                        exit()
+                    keepRunning = False
                 elif self.installDir not in [None, '', 'none', 'null', 'None']:
                     process = subprocess.Popen(
-                        f'docker pull satorinet/satorineuron:{self.version}')
+                        ['docker', 'pull', f'satorinet/satorineuron:{self.version}'])
                     process.wait()
-                    subprocess.Popen((
-                        'docker run --rm -it --name satorineuron '
-                        '-p 24601:24601 '
-                        f'-v {os.path.join(self.installDir, "wallet")}:/Satori/Neuron/wallet '
-                        f'-v {os.path.join(self.installDir, "config")}:/Satori/Neuron/config '
-                        f'-v {os.path.join(self.installDir, "data")}:/Satori/Neuron/data '
-                        f'-v {os.path.join(self.installDir, "models")}:/Satori/Neuron/models '
-                        f'--env ENV={getConfigEnv(os.path.join(self.installDir, "config", "config.yaml"))} '
-                        f'satorinet/satorineuron:{self.version} ./start.sh'),)
+                    subprocess.Popen([
+                        'docker', 'run', '--rm', '-it', '--name', 'satorineuron',
+                        '-p', '24601:24601',
+                        '-v', f'{os.path.join(self.installDir, "wallet")}:/Satori/Neuron/wallet',
+                        '-v', f'{os.path.join(self.installDir, "config")}:/Satori/Neuron/config',
+                        '-v', f'{os.path.join(self.installDir, "data")}:/Satori/Neuron/data',
+                        '-v', f'{os.path.join(self.installDir, "models")}:/Satori/Neuron/models',
+                        '--env', f'ENV={getConfigEnv(os.path.join(self.installDir, "config", "config.yaml"))}',
+                        f'satorinet/satorineuron:{self.version}', './start.sh',
+                    ])
                     raise Exception('restarting neuron...')
             if signal.shutdown:
                 greyPrint('shutting down Satori Neuron...')
-                process = subprocess.Popen('docker stop satorineuron')
+                process = subprocess.Popen(['docker', 'stop', 'satorineuron'])
                 process.wait()
-                self.shutdown()
-                exit()
+                try:
+                    self.shutdown()
+                except Exception as _:
+                    exit()
+                keepRunning = False
 
         msg = Envelope.fromJson(message)
         if msg.vesicle.className == 'Signal':
@@ -496,6 +501,7 @@ def main(
             synapse.shutdown()
             time.sleep(5)
     synapse.shutdown()
+    exit()
 
 
 def runSynapse(
