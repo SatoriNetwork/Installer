@@ -112,3 +112,5 @@ EOL
 npm install -g create-dmg
 create-dmg MyApp.app
 This process will generate a DMG file that users can easily install by dragging the application to their Applications folder.
+
+create-dmg --no-skip-checks Satori.app ; mv "Satori undefined.dmg" "Satori.dmg"
