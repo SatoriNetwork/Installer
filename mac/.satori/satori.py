@@ -31,194 +31,207 @@ redundant requirements.txt file.
 #   ````
 # 6. push Installer and Central, `cycle` on server
 
+import os
+import getpass
+import subprocess
+import threading
+import platform
+from synapse import SYNAPSE_PORT, runSynapse, requests, silentlyWaitForNeuron
 
-def main():
-    import os
-    import getpass
-    import subprocess
-    import threading
-    import platform
-    from synapse import SYNAPSE_PORT, runSynapse, requests, silentlyWaitForNeuron
+# ################################ runner #####################################
 
-    # ################################ runner #####################################
 
-    LOCAL_URL = 'http://127.0.0.1:24601'
-    USER_NAME = getpass.getuser()
-    INSTALL_DIR = os.path.expanduser('~/.satori')
-    IMAGE_VERSION = 'v1'
+LOCAL_URL = 'http://127.0.0.1:24601'
+USER_NAME = getpass.getuser()
+INSTALL_DIR = os.path.expanduser('~/.satori')
+IMAGE_VERSION = 'v1'
 
-    def welcome():
-        print(f"""
-                                        @@@@                                     
-                            @@@@@@@@@@@@@@@@@@@@@@@@@@@@@                         
-                        @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                    
-                    @@@@@@@@@@@@@@@@@@@         @@@@@@@@@   @@@@@@@@               
-                @@@@@@@@@@@@@                          @@@@@  @@@@@@@             
-            @@@@@@@@@@@@                                   @@@ @@@@@@@@          
-            @@@@@@@@@@                                          @@@@@@@@@@@        
-        @@@@@@@@@@                                               @@@@@@@@@@      
-        @@@@@@@@                                                    @@@@@@@@@     
-    @@@@@@@@@                                                       @ @@@@@@    
-    @@@@@@@@                                                          @@@@@@@@@  
-    @@@@@@@@                                                            @ @@@@@@  
-    @@@@@@@@                                                               @@@@@@ 
-    @@@@@@@@                                                                 @@@@@@
-    @@@@@@@@                                                                 @@@@@@
-    @@@@@@@                                                                   @ @@@
-    @@@@@@@                                                                   @ @@@
-    @@@@@@@                                 @                                @@ @@@
-    @@@@@@@@                              @@@@@                              @@ @@@
-    @@@@@@@@                             @@@@@@@                            @@ @@@@
-    @@@@@@@@                            @@@@@@@                           @@ @@@  
-    @@@@@@@@                            @@@@@                           @@ @@@   
-    @@@@@@@@                        @@@@@@@@@@@                       @@ @@@    
-        @@@@@@@@@                    @@@@@@@@@@@@@@@                     @ @@@     
-        @@@@@@@@@@                  @@@@@@@@@@@@@@@                    @ @@@      
-        @@@@@@@@@@               @@@ @@@@@@@@@ @@@                    @@@       
-            @@@@@@@@@@@            @@@ @@@@@@@@@ @@@                   @@         
-            @@@@@@@@@@@@   @@@@@@@@@@@@@@@@@@@@@@@@@@@@             @           
-                @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@      @@                 
-                    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@@@ @                 
-                        @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                    
-                            @@@@@@@@@@@@@@@@@@@@@@@@@@@                         
-                                                                                
-    ###############################################################################
-    ####                                                                       ####
-    ####                      Starting the Satori Neuron                       ####
-    ####                                                                       ####
-    ####     Please don't close this window or the Satori Neuron will stop.    ####
-    ####           The Satori UI will open in your web browser soon.           ####
-    ####                                                                       ####
-    ####                        {LOCAL_URL}                         ####
-    ####                                                                       ####
-    ###############################################################################
 
-    Please make sure that Docker is already running. 
-    And hold tight, this may take several minutes...
+def welcome():
+    print(f"""
+                                      @@@@                                     
+                         @@@@@@@@@@@@@@@@@@@@@@@@@@@@@                         
+                    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                    
+                @@@@@@@@@@@@@@@@@@@         @@@@@@@@@   @@@@@@@@               
+             @@@@@@@@@@@@@                          @@@@@  @@@@@@@             
+          @@@@@@@@@@@@                                   @@@ @@@@@@@@          
+        @@@@@@@@@@                                          @@@@@@@@@@@        
+      @@@@@@@@@@                                               @@@@@@@@@@      
+     @@@@@@@@                                                    @@@@@@@@@     
+   @@@@@@@@@                                                       @ @@@@@@    
+  @@@@@@@@                                                          @@@@@@@@@  
+ @@@@@@@@                                                            @ @@@@@@  
+ @@@@@@@@                                                               @@@@@@ 
+@@@@@@@@                                                                 @@@@@@
+@@@@@@@@                                                                 @@@@@@
+@@@@@@@                                                                   @ @@@
+@@@@@@@                                                                   @ @@@
+@@@@@@@                                 @                                @@ @@@
+@@@@@@@@                              @@@@@                              @@ @@@
+@@@@@@@@                             @@@@@@@                            @@ @@@@
+ @@@@@@@@                            @@@@@@@                           @@ @@@  
+  @@@@@@@@                            @@@@@                           @@ @@@   
+   @@@@@@@@                        @@@@@@@@@@@                       @@ @@@    
+    @@@@@@@@@                    @@@@@@@@@@@@@@@                     @ @@@     
+     @@@@@@@@@@                  @@@@@@@@@@@@@@@                    @ @@@      
+       @@@@@@@@@@               @@@ @@@@@@@@@ @@@                    @@@       
+         @@@@@@@@@@@            @@@ @@@@@@@@@ @@@                   @@         
+           @@@@@@@@@@@@   @@@@@@@@@@@@@@@@@@@@@@@@@@@@             @           
+              @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@      @@                 
+                @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@@@ @                 
+                     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                    
+                           @@@@@@@@@@@@@@@@@@@@@@@@@@@                         
+                                                                               
+###############################################################################
+####                                                                       ####
+####                      Starting the Satori Neuron                       ####
+####                                                                       ####
+####     Please don't close this window or the Satori Neuron will stop.    ####
+####           The Satori UI will open in your web browser soon.           ####
+####                                                                       ####
+####                        {LOCAL_URL}                         ####
+####                                                                       ####
+###############################################################################
 
-    """)
-    ####          If you don't want to see Satori Neuron engine logs           ####
-    ####    you can close this window after Satori opens in a web browser.     ####
+Please make sure that Docker is already running. 
+And hold tight, this may take several minutes...
 
-    def setupDirectory():
-        ''' setup directory to mount to /wallet /config /data /models'''
-        os.makedirs(os.path.join(INSTALL_DIR, 'wallet'), exist_ok=True)
-        os.makedirs(os.path.join(INSTALL_DIR, 'config'), exist_ok=True)
-        os.makedirs(os.path.join(INSTALL_DIR, 'data'), exist_ok=True)
-        os.makedirs(os.path.join(INSTALL_DIR, 'models'), exist_ok=True)
+""")
+####          If you don't want to see Satori Neuron engine logs           ####
+####    you can close this window after Satori opens in a web browser.     ####
 
-    def setVersion() -> str:
-        global IMAGE_VERSION
-        response = requests.get('https://satorinet.io/version/docker')
-        if response == '':
-            IMAGE_VERSION = 'latest'
-        else:
-            IMAGE_VERSION = response
-        return IMAGE_VERSION
 
-    def removeDanglingImages():
-        command = (
-            'docker rmi $('
-            'docker images -q '
-            '-f "reference=satorinet/satorineuron" '
-            '-f "dangling=true")')
-        try:
-            _ = subprocess.run(
-                command,
-                shell=True, capture_output=True, text=True)
-            # if result.stderr:
-            #    print("Error:", result.stderr)
-            # else:
-            #    print("Output:", result.stdout)
-        except Exception as e:
-            print("An error occurred:", e)
+def setupDirectory():
+    ''' setup directory to mount to /wallet /config /data /models'''
+    os.makedirs(os.path.join(INSTALL_DIR, 'wallet'), exist_ok=True)
+    os.makedirs(os.path.join(INSTALL_DIR, 'config'), exist_ok=True)
+    os.makedirs(os.path.join(INSTALL_DIR, 'data'), exist_ok=True)
+    os.makedirs(os.path.join(INSTALL_DIR, 'models'), exist_ok=True)
 
-    def pullSatoriNeuron(version: str) -> subprocess.Popen:
-        return subprocess.Popen(
-            f'docker pull satorinet/satorineuron:{version}',
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    def getConfigEnv(configPath: str) -> str:
-        if os.path.exists(configPath):
-            with open(configPath, mode='r') as f:
-                for line in f:
-                    if line.startswith('env:'):
-                        return line.split(':')[1].strip()
-        return 'prod'
+def setVersion() -> str:
+    global IMAGE_VERSION
+    response = requests.get('https://satorinet.io/version/docker')
+    if response == '':
+        IMAGE_VERSION = 'latest'
+    else:
+        IMAGE_VERSION = response
+    return IMAGE_VERSION
 
-    def startSatoriNeuronNative(version: str) -> subprocess.Popen:
-        return subprocess.Popen((
-            'docker run -t --rm --name satorineuron '
-            '-p 24601:24601 '
-            f'-v {os.path.join(INSTALL_DIR, "wallet")}:/Satori/Neuron/wallet '
-            f'-v {os.path.join(INSTALL_DIR, "config")}:/Satori/Neuron/config '
-            f'-v {os.path.join(INSTALL_DIR, "data")}:/Satori/Neuron/data '
-            f'-v {os.path.join(INSTALL_DIR, "models")}:/Satori/Neuron/models '
-            f'--env ENV={getConfigEnv(os.path.join(INSTALL_DIR, "config", "config.yaml"))} '
-            f'satorinet/satorineuron:{version} ./start.sh'),
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    def openInBrowserNative():
-        try:
-            if platform.system() == 'Linux':
-                # Check if the DISPLAY environment variable is set (common in GUI environments)
-                if 'DISPLAY' in os.environ:
-                    silentlyWaitForNeuron()
-                    subprocess.run(['xdg-open', LOCAL_URL], check=True)
-                else:
-                    print("GUI environment not detected. Unable to open URL.")
-        except Exception as _:
-            print("Could not locate web browser.")
+def removeDanglingImages():
+    command = (
+        'docker rmi $('
+        'docker images -q '
+        '-f "reference=satorinet/satorineuron" '
+        '-f "dangling=true")')
+    try:
+        _ = subprocess.run(
+            command,
+            shell=True, capture_output=True, text=True)
+        # if result.stderr:
+        #    print("Error:", result.stderr)
+        # else:
+        #    print("Output:", result.stdout)
+    except Exception as e:
+        print("An error occurred:", e)
 
-    def printOutDisplay(process: subprocess.Popen) -> str:
-        errorMsg = ''
-        for line in iter(process.stdout.readline, b''):
-            line_decoded = line.decode('utf-8').rstrip()
-            print(line_decoded, flush=True)
-            # is this the correct error on mac?
-            # 'docker: error during connect: this error may indicate that the docker daemon is not running: Post "http://%2F%2F.%2Fpipe%2Fdocker_engine/v1.24/containers/create?name=satorineuron": open //./pipe/docker_engine: The system cannot find the file specified.'
-            # "See 'docker run --help'."
-            if line_decoded.startswith('docker: error during connect'):
-                errorMsg = '\n\nSatori could not start, Docker daemon may not be running. You might have to start Docker Desktop, and try again.\n\n'
-        process.wait()
-        print(errorMsg)
-        return errorMsg
 
-    # ################################# entry #####################################
+def pullSatoriNeuron(version: str) -> subprocess.Popen:
+    return subprocess.Popen(
+        f'docker pull satorinet/satorineuron:{version}',
+        shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    def runHost():
-        hostThread = threading.Thread(target=runSynapse, daemon=True, args=(
-            SYNAPSE_PORT,
-            IMAGE_VERSION,
-            os.path.abspath(__file__),
-            INSTALL_DIR,
-        ))
-        hostThread.start()
 
-    def installSatori():
-        welcome()
-        setupDirectory()
-        setVersion()
+def getConfigEnv(configPath: str) -> str:
+    if os.path.exists(configPath):
+        with open(configPath, mode='r') as f:
+            for line in f:
+                if line.startswith('env:'):
+                    return line.split(':')[1].strip()
+    return 'prod'
 
-    def runSatori():
-        process = pullSatoriNeuron(IMAGE_VERSION)
-        removeDanglingImages()
-        errorMsg = printOutDisplay(process)
-        if errorMsg != '':
-            print(
-                'Error encountered. '
-                'Docker daemon may not be running. '
-                'Please ensure Docker is running and try again.')
-            return
-        process = startSatoriNeuronNative(IMAGE_VERSION)
-        errorMsg = printOutDisplay(process)
-        if errorMsg != '':
-            print("Error occurred while starting or running Satori Neuron.")
-        openInBrowserNative()
 
-    def runForever():
-        installSatori()
-        runHost()
-        runSatori()
+def startSatoriNeuronNative(version: str) -> subprocess.Popen:
+    return subprocess.Popen((
+        'docker run -t --rm --name satorineuron '
+        '-p 24601:24601 '
+        f'-v {os.path.join(INSTALL_DIR, "wallet")}:/Satori/Neuron/wallet '
+        f'-v {os.path.join(INSTALL_DIR, "config")}:/Satori/Neuron/config '
+        f'-v {os.path.join(INSTALL_DIR, "data")}:/Satori/Neuron/data '
+        f'-v {os.path.join(INSTALL_DIR, "models")}:/Satori/Neuron/models '
+        f'--env ENV={getConfigEnv(os.path.join(INSTALL_DIR, "config", "config.yaml"))} '
+        f'satorinet/satorineuron:{version} ./start.sh'),
+        shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    runForever()
+
+def openInBrowserNative():
+    try:
+        if platform.system() == 'Linux':
+            # Check if the DISPLAY environment variable is set (common in GUI environments)
+            if 'DISPLAY' in os.environ:
+                silentlyWaitForNeuron()
+                subprocess.run(['xdg-open', LOCAL_URL], check=True)
+            else:
+                print("GUI environment not detected. Unable to open URL.")
+    except Exception as _:
+        print("Could not locate web browser.")
+
+
+def printOutDisplay(process: subprocess.Popen) -> str:
+    errorMsg = ''
+    for line in iter(process.stdout.readline, b''):
+        line_decoded = line.decode('utf-8').rstrip()
+        print(line_decoded, flush=True)
+        # is this the correct error on mac?
+        # 'docker: error during connect: this error may indicate that the docker daemon is not running: Post "http://%2F%2F.%2Fpipe%2Fdocker_engine/v1.24/containers/create?name=satorineuron": open //./pipe/docker_engine: The system cannot find the file specified.'
+        # "See 'docker run --help'."
+        if line_decoded.startswith('docker: error during connect'):
+            errorMsg = '\n\nSatori could not start, Docker daemon may not be running. You might have to start Docker Desktop, and try again.\n\n'
+    process.wait()
+    print(errorMsg)
+    return errorMsg
+
+# ################################# entry #####################################
+
+
+def runHost():
+    hostThread = threading.Thread(target=runSynapse, daemon=True, args=(
+        SYNAPSE_PORT,
+        IMAGE_VERSION,
+        os.path.abspath(__file__),
+        INSTALL_DIR,
+    ))
+    hostThread.start()
+
+
+def installSatori():
+    welcome()
+    setupDirectory()
+    setVersion()
+
+
+def runSatori():
+    process = pullSatoriNeuron(IMAGE_VERSION)
+    removeDanglingImages()
+    errorMsg = printOutDisplay(process)
+    if errorMsg != '':
+        print(
+            'Error encountered. '
+            'Docker daemon may not be running. '
+            'Please ensure Docker is running and try again.')
+        return
+    process = startSatoriNeuronNative(IMAGE_VERSION)
+    errorMsg = printOutDisplay(process)
+    if errorMsg != '':
+        print("Error occurred while starting or running Satori Neuron.")
+    openInBrowserNative()
+
+
+def runForever():
+    installSatori()
+    runHost()
+    runSatori()
+
+
+runForever()
