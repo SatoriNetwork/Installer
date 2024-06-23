@@ -138,10 +138,8 @@ def removeDanglingImages():
 
 
 def pullSatoriNeuron(version: str) -> subprocess.Popen:
-    if version != 'v1':
-        printOutDisplay(subprocess.Popen(
-            'docker pull satorinet/satorineuron:v1',
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
+    if version == 'latest':
+        version = 'v1'
     return subprocess.Popen(
         f'docker pull satorinet/satorineuron:{version}',
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
