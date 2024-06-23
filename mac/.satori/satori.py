@@ -166,13 +166,23 @@ def startSatoriNeuronNative(version: str) -> subprocess.Popen:
 
 
 def openInBrowserNative():
-    import webbrowser
+    # content = '<!DOCTYPE html><html><head><title>Starting Satori Neuron</title><script type="text/javascript">setTimeout(function(){window.location.href = "http://127.0.0.1:24601";}, 1000 * 60);</script></head><body><p>Please wait a few minutes while the Satori Neuron boots up. <a href="http://127.0.0.1:24601">Refresh</a></p></body></html>'
+    # try:
+    #    import urllib.parse
+    #    webbrowser.open(f'data:text/html,{urllib.parse.quote(content)}')
+    # except Exception as e:
     try:
+        import webbrowser
         # new=2 opens the URL in a new tab, if possible
-        webbrowser.open('http://127.0.0.1:24601', new=2)
+        # webbrowser.open('http://127.0.0.1:24601', new=2)
+        webbrowser.open('https://satorinet.io/loading-neuron', new=2)
         print(f"Opened URL: {'http://127.0.0.1:24601'}")
     except Exception as e:
-        print(f"Failed to open URL: {'http://127.0.0.1:24601'}. Error: {e}")
+        print(
+            f"Failed to open URL: {'http://127.0.0.1:24601'}. Error: {e}")
+
+
+openInBrowserNative()
 
 
 def printOutDisplay(process: subprocess.Popen) -> str:
@@ -218,7 +228,6 @@ def runSatori():
             'Docker daemon may not be running. '
             'Please ensure Docker is running and try again.')
         return
-    # openInBrowserNative()  # launcher opens it now.
     process = startSatoriNeuronNative(IMAGE_VERSION)
     errorMsg = printOutDisplay(process)
     if errorMsg != '':
@@ -226,6 +235,7 @@ def runSatori():
 
 
 def runForever():
+    # openInBrowserNative() # launcher does it.
     installSatori()
     runHost()
     runSatori()
