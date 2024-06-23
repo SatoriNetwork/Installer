@@ -166,16 +166,13 @@ def startSatoriNeuronNative(version: str) -> subprocess.Popen:
 
 
 def openInBrowserNative():
+    import webbrowser
     try:
-        if platform.system() == 'Linux':
-            # Check if the DISPLAY environment variable is set (common in GUI environments)
-            if 'DISPLAY' in os.environ:
-                silentlyWaitForNeuron()
-                subprocess.run(['xdg-open', LOCAL_URL], check=True)
-            else:
-                print("GUI environment not detected. Unable to open URL.")
-    except Exception as _:
-        print("Could not locate web browser.")
+        # new=2 opens the URL in a new tab, if possible
+        webbrowser.open('http://127.0.0.1:24601', new=2)
+        print(f"Opened URL: {'http://127.0.0.1:24601'}")
+    except Exception as e:
+        print(f"Failed to open URL: {'http://127.0.0.1:24601'}. Error: {e}")
 
 
 def printOutDisplay(process: subprocess.Popen) -> str:
