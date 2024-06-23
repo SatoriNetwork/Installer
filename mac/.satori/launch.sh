@@ -26,7 +26,6 @@ echo "$HTML_CONTENT" > "$TEMP_HTML_FILE"
 # Command to open the temporary HTML file in the browser
 open "$TEMP_HTML_FILE"
 
-
 # Command to open Terminal and run the Python script
 osascript -e "tell application \"Terminal\" to do script \"$PYTHON_SCRIPT_PATH\""
 
