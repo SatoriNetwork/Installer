@@ -172,15 +172,21 @@ def startSatoriNeuronNative(version: str) -> subprocess.Popen:
 
 def openInBrowserNative():
     try:
-        if platform.system() == 'Linux':
-            # Check if the DISPLAY environment variable is set (common in GUI environments)
-            if 'DISPLAY' in os.environ:
-                silentlyWaitForNeuron()
-                subprocess.run(['xdg-open', LOCAL_URL], check=True)
-            else:
-                print("GUI environment not detected. Unable to open URL.")
-    except Exception as _:
-        print("Could not locate web browser.")
+        import webbrowser
+        # new=2 opens the URL in a new tab, if possible
+        webbrowser.open('http://127.0.0.1:24601', new=2)
+    except Exception as e:
+        try:
+            if platform.system() == 'Linux':
+                # Check if the DISPLAY environment variable is set (common in GUI environments)
+                if 'DISPLAY' in os.environ:
+                    silentlyWaitForNeuron()
+                    subprocess.run(['xdg-open', LOCAL_URL], check=True)
+                else:
+                    print("GUI environment not detected. Unable to open URL.")
+        except Exception as _:
+            print(
+                f"Failed to open URL: {'http://127.0.0.1:24601'}. Error: {e}")
 
 
 def printOutDisplay(process: subprocess.Popen) -> str:
@@ -227,11 +233,11 @@ def runSatori():
             'Docker daemon may not be running. '
             'Please ensure Docker is running and try again.')
         return
+    openInBrowserNative()
     process = startSatoriNeuronNative(IMAGE_VERSION)
     errorMsg = printOutDisplay(process)
     if errorMsg != '':
         print("Error occurred while starting or running Satori Neuron.")
-    openInBrowserNative()
 
 
 def runForever():
