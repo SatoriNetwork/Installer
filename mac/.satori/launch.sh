@@ -4,5 +4,8 @@
 # Path to the Python script inside the app bundle
 PYTHON_SCRIPT_PATH="$(dirname "$0")/Satori"
 
+# Command to open the browser
+open "http://127.0.0.1:24601"
+
 # Command to open Terminal and run the Python script
 osascript -e "tell application \"Terminal\" to do script \"$PYTHON_SCRIPT_PATH\""
