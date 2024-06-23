@@ -25,7 +25,7 @@ redundant requirements.txt file.
 #   cd /mnt/c/repos/Satori/Installer/linux
 #   rm -rf satori.zip
 #   zip -r satori.zip .satori
-#   cp /mnt/c/repos/Satori/Installer/linux/satori.zip /mnt/c/repos/Satori/Central/satoricentral/server/static/download/
+#   cp /mnt/c/repos/Satori/Installer/linux/satori.zip /mnt/c/repos/Satori/Central/satoricentral/server/static/download/linux/
 #   echo "done"
 #
 #   ```
