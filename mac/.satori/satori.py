@@ -174,15 +174,12 @@ def openInBrowserNative():
     try:
         import webbrowser
         # new=2 opens the URL in a new tab, if possible
-        # webbrowser.open('http://127.0.0.1:24601', new=2)
-        webbrowser.open('https://satorinet.io/loading-neuron', new=2)
+        # webbrowser.open('https://satorinet.io/neuron/loading', new=2)
+        webbrowser.open('http://127.0.0.1:24601', new=2)
         print(f"Opened URL: {'http://127.0.0.1:24601'}")
     except Exception as e:
         print(
             f"Failed to open URL: {'http://127.0.0.1:24601'}. Error: {e}")
-
-
-openInBrowserNative()
 
 
 def printOutDisplay(process: subprocess.Popen) -> str:
