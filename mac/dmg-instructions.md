@@ -113,4 +113,19 @@ npm install -g create-dmg
 create-dmg MyApp.app
 This process will generate a DMG file that users can easily install by dragging the application to their Applications folder.
 
-create-dmg --no-skip-checks Satori.app ; mv "Satori undefined.dmg" "Satori.dmg"
+SETUP:
+brew install npm
+npm install -g create-dmg
+# install python 
+# install all deps
+# icon stuff
+mkdir -p MyApp.app/Contents/MacOS
+mkdir -p MyApp.app/Contents/Resources
+cp launch.sh Satori.app/Contents/MacOS/launch.sh
+# plist stuff
+
+UPDATES:
+pyinstaller --onefile satori.py ; cp dist/satori Satori.app/Contents/MacOS/Satori
+chmod +x Satori.app/Contents/MacOS/Satori.sh
+chmod +x Satori.app/Contents/MacOS/launch.sh
+rm -f Satori.dmg ; create-dmg --no-skip-checks Satori.app ; mv "Satori undefined.dmg" "Satori.dmg"
