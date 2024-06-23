@@ -218,11 +218,11 @@ def runSatori():
             'Docker daemon may not be running. '
             'Please ensure Docker is running and try again.')
         return
+    # openInBrowserNative() # launcher opens it now.
     process = startSatoriNeuronNative(IMAGE_VERSION)
     errorMsg = printOutDisplay(process)
     if errorMsg != '':
         print("Error occurred while starting or running Satori Neuron.")
-    openInBrowserNative()
 
 
 def runForever():
