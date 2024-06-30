@@ -64,6 +64,12 @@ deactivate
 
 If you get a message about installing venv for python please do so, and try agian.
 
+The message will provide a command to install python's virtual environments and it may vary depending on your linux distribution but should probably look something like this:
+
+```
+apt-get install python3-venv
+```
+
 ## Step 2. Set up a service to keep Satori running
 
 We're going to use systemd to keep satori up and running all the time.
@@ -75,6 +81,7 @@ bash install_service.sh
 
 **manual:**
 ```
+sudo groupadd docker
 sudo usermod -aG docker $USER
 newgrp docker
 sed -i "s/#User=.*/User=$USER/" "$(pwd)/satori.service"
