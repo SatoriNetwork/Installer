@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-''' 
+'''
 for linux the runner will be a bit different, we don't have to compile it into
 an executable because we can just run it as a python script. but we need to make
-sure the environment is setup properly. we still need this script running 
-outside the docker image because the docker images expects it to relay messages 
+sure the environment is setup properly. we still need this script running
+outside the docker image because the docker images expects it to relay messages
 in the p2p network, even though we probably don't need to do that on linux. it
 seemed to be only a problem with windows.
 
-we're going to include requests and aiohttp with the script as well as a 
+we're going to include requests and aiohttp with the script as well as a
 redundant requirements.txt file.
 '''
 
@@ -49,19 +49,19 @@ IMAGE_VERSION = 'v1'
 
 def welcome():
     print(f"""
-                                      @@@@                                     
-                         @@@@@@@@@@@@@@@@@@@@@@@@@@@@@                         
-                    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                    
-                @@@@@@@@@@@@@@@@@@@         @@@@@@@@@   @@@@@@@@               
-             @@@@@@@@@@@@@                          @@@@@  @@@@@@@             
-          @@@@@@@@@@@@                                   @@@ @@@@@@@@          
-        @@@@@@@@@@                                          @@@@@@@@@@@        
-      @@@@@@@@@@                                               @@@@@@@@@@      
-     @@@@@@@@                                                    @@@@@@@@@     
-   @@@@@@@@@                                                       @ @@@@@@    
-  @@@@@@@@                                                          @@@@@@@@@  
- @@@@@@@@                                                            @ @@@@@@  
- @@@@@@@@                                                               @@@@@@ 
+                                      @@@@
+                         @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                @@@@@@@@@@@@@@@@@@@         @@@@@@@@@   @@@@@@@@
+             @@@@@@@@@@@@@                          @@@@@  @@@@@@@
+          @@@@@@@@@@@@                                   @@@ @@@@@@@@
+        @@@@@@@@@@                                          @@@@@@@@@@@
+      @@@@@@@@@@                                               @@@@@@@@@@
+     @@@@@@@@                                                    @@@@@@@@@
+   @@@@@@@@@                                                       @ @@@@@@
+  @@@@@@@@                                                          @@@@@@@@@
+ @@@@@@@@                                                            @ @@@@@@
+ @@@@@@@@                                                               @@@@@@
 @@@@@@@@                                                                 @@@@@@
 @@@@@@@@                                                                 @@@@@@
 @@@@@@@                                                                   @ @@@
@@ -69,19 +69,19 @@ def welcome():
 @@@@@@@                                 @                                @@ @@@
 @@@@@@@@                              @@@@@                              @@ @@@
 @@@@@@@@                             @@@@@@@                            @@ @@@@
- @@@@@@@@                            @@@@@@@                           @@ @@@  
-  @@@@@@@@                            @@@@@                           @@ @@@   
-   @@@@@@@@                        @@@@@@@@@@@                       @@ @@@    
-    @@@@@@@@@                    @@@@@@@@@@@@@@@                     @ @@@     
-     @@@@@@@@@@                  @@@@@@@@@@@@@@@                    @ @@@      
-       @@@@@@@@@@               @@@ @@@@@@@@@ @@@                    @@@       
-         @@@@@@@@@@@            @@@ @@@@@@@@@ @@@                   @@         
-           @@@@@@@@@@@@   @@@@@@@@@@@@@@@@@@@@@@@@@@@@             @           
-              @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@      @@                 
-                @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@@@ @                 
-                     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                    
-                           @@@@@@@@@@@@@@@@@@@@@@@@@@@                         
-                                                                               
+ @@@@@@@@                            @@@@@@@                           @@ @@@
+  @@@@@@@@                            @@@@@                           @@ @@@
+   @@@@@@@@                        @@@@@@@@@@@                       @@ @@@
+    @@@@@@@@@                    @@@@@@@@@@@@@@@                     @ @@@
+     @@@@@@@@@@                  @@@@@@@@@@@@@@@                    @ @@@
+       @@@@@@@@@@               @@@ @@@@@@@@@ @@@                    @@@
+         @@@@@@@@@@@            @@@ @@@@@@@@@ @@@                   @@
+           @@@@@@@@@@@@   @@@@@@@@@@@@@@@@@@@@@@@@@@@@             @
+              @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@      @@
+                @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@@@ @
+                     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                           @@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 ###############################################################################
 ####                                                                       ####
 ####                      Starting the Satori Neuron                       ####
@@ -93,7 +93,7 @@ def welcome():
 ####                                                                       ####
 ###############################################################################
 
-Please make sure that Docker is already running. 
+Please make sure that Docker is already running.
 And hold tight, this may take several minutes...
 
 """)
@@ -156,11 +156,11 @@ def startSatoriNeuronNative(version: str) -> subprocess.Popen:
     return subprocess.Popen((
         'docker run -t --rm --name satorineuron '
         '-p 24601:24601 '
-        f'-v {os.path.join(INSTALL_DIR, "wallet")}:/Satori/Neuron/wallet '
-        f'-v {os.path.join(INSTALL_DIR, "config")}:/Satori/Neuron/config '
-        f'-v {os.path.join(INSTALL_DIR, "data")}:/Satori/Neuron/data '
-        f'-v {os.path.join(INSTALL_DIR, "models")}:/Satori/Neuron/models '
-        f'--env ENV={getConfigEnv(os.path.join(INSTALL_DIR, "config", "config.yaml"))} '
+        f'-v "{os.path.join(INSTALL_DIR, """wallet""")}:/Satori/Neuron/wallet" '
+        f'-v "{os.path.join(INSTALL_DIR, """config""")}:/Satori/Neuron/config" '
+        f'-v "{os.path.join(INSTALL_DIR, """data""")}:/Satori/Neuron/data" '
+        f'-v "{os.path.join(INSTALL_DIR, """models""")}:/Satori/Neuron/models" '
+        f'--env ENV={getConfigEnv(os.path.join(INSTALL_DIR, """config""", """config.yaml"""))} '
         f'satorinet/satorineuron:{version} ./start.sh'),
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 

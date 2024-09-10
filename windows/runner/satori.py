@@ -1,5 +1,5 @@
-''' 
-this is version 2 of the installer/runner. Version 1 created an exe from the 
+'''
+this is version 2 of the installer/runner. Version 1 created an exe from the
 installer, and ran batch commands, and had those batch commands call out to the
 web to get the lastest version. all of these activities were flagged by anti-
 virus so windows thought it was uspicious.
@@ -66,19 +66,19 @@ IMAGE_VERSION = 'v1'
 
 def welcome():
     print(f"""
-                                       @@@@                                      
-                          @@@@@@@@@@@@@@@@@@@@@@@@@@@@@                         
-                     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                    
-                 @@@@@@@@@@@@@@@@@@@         @@@@@@@@@   @@@@@@@@                
-              @@@@@@@@@@@@@                          @@@@@  @@@@@@@             
-           @@@@@@@@@@@@                                   @@@ @@@@@@@@          
-         @@@@@@@@@@                                          @@@@@@@@@@@        
-       @@@@@@@@@@                                               @@@@@@@@@@      
-      @@@@@@@@                                                    @@@@@@@@@     
-    @@@@@@@@@                                                       @ @@@@@@    
-   @@@@@@@@                                                          @@@@@@@@@  
-  @@@@@@@@                                                            @ @@@@@@  
-  @@@@@@@@                                                               @@@@@@ 
+                                       @@@@
+                          @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                 @@@@@@@@@@@@@@@@@@@         @@@@@@@@@   @@@@@@@@
+              @@@@@@@@@@@@@                          @@@@@  @@@@@@@
+           @@@@@@@@@@@@                                   @@@ @@@@@@@@
+         @@@@@@@@@@                                          @@@@@@@@@@@
+       @@@@@@@@@@                                               @@@@@@@@@@
+      @@@@@@@@                                                    @@@@@@@@@
+    @@@@@@@@@                                                       @ @@@@@@
+   @@@@@@@@                                                          @@@@@@@@@
+  @@@@@@@@                                                            @ @@@@@@
+  @@@@@@@@                                                               @@@@@@
  @@@@@@@@                                                                 @@@@@@
  @@@@@@@@                                                                 @@@@@@
  @@@@@@@                                                                   @ @@@
@@ -86,19 +86,19 @@ def welcome():
  @@@@@@@                                 @                                @@ @@@
  @@@@@@@@                              @@@@@                              @@ @@@
  @@@@@@@@                             @@@@@@@                            @@ @@@@
-  @@@@@@@@                            @@@@@@@                           @@ @@@ 
-   @@@@@@@@                            @@@@@                           @@ @@@  
-    @@@@@@@@                        @@@@@@@@@@@                       @@ @@@   
-     @@@@@@@@@                    @@@@@@@@@@@@@@@                     @ @@@    
-      @@@@@@@@@@                  @@@@@@@@@@@@@@@                    @ @@@     
-        @@@@@@@@@@               @@@ @@@@@@@@@ @@@                    @@@       
-          @@@@@@@@@@@            @@@ @@@@@@@@@ @@@                   @@         
-            @@@@@@@@@@@@   @@@@@@@@@@@@@@@@@@@@@@@@@@@@             @           
-               @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@      @@                 
-                 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@@@ @                 
-                      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                    
-                            @@@@@@@@@@@@@@@@@@@@@@@@@@@                        
-                                      
+  @@@@@@@@                            @@@@@@@                           @@ @@@
+   @@@@@@@@                            @@@@@                           @@ @@@
+    @@@@@@@@                        @@@@@@@@@@@                       @@ @@@
+     @@@@@@@@@                    @@@@@@@@@@@@@@@                     @ @@@
+      @@@@@@@@@@                  @@@@@@@@@@@@@@@                    @ @@@
+        @@@@@@@@@@               @@@ @@@@@@@@@ @@@                    @@@
+          @@@@@@@@@@@            @@@ @@@@@@@@@ @@@                   @@
+            @@@@@@@@@@@@   @@@@@@@@@@@@@@@@@@@@@@@@@@@@             @
+               @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@      @@
+                 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@@@ @
+                      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                            @@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 ###############################################################################
 ####                                                                       ####
 ####                      Starting the Satori Neuron                       ####
@@ -110,7 +110,7 @@ def welcome():
 ####                                                                       ####
 ###############################################################################
 
-Please make sure that Docker is already running. 
+Please make sure that Docker is already running.
 And hold tight, this may take several minutes...
 
 """)
@@ -127,8 +127,8 @@ def setupDirectory():
 
 
 def setupStartup():
-    ''' 
-    will setup a run script in startup folder to wait 5 minutes then run the 
+    '''
+    will setup a run script in startup folder to wait 5 minutes then run the
     satori container
     '''
     def ui(installed=False) -> bool:
@@ -242,11 +242,11 @@ def startSatoriNeuron(version: str) -> subprocess.Popen:
     return subprocess.Popen((
         'docker run --rm -it --name satorineuron '
         '-p 24601:24601 '
-        f'-v {os.path.join(INSTALL_DIR, "wallet")}:/Satori/Neuron/wallet '
-        f'-v {os.path.join(INSTALL_DIR, "config")}:/Satori/Neuron/config '
-        f'-v {os.path.join(INSTALL_DIR, "data")}:/Satori/Neuron/data '
-        f'-v {os.path.join(INSTALL_DIR, "models")}:/Satori/Neuron/models '
-        f'--env ENV={getConfigEnv(os.path.join(INSTALL_DIR, "config", "config.yaml"))} '
+        f'-v "{os.path.join(INSTALL_DIR, """wallet""")}:/Satori/Neuron/wallet" '
+        f'-v "{os.path.join(INSTALL_DIR, """config""")}:/Satori/Neuron/config" '
+        f'-v "{os.path.join(INSTALL_DIR, """data""")}:/Satori/Neuron/data" '
+        f'-v "{os.path.join(INSTALL_DIR, """models""")}:/Satori/Neuron/models" '
+        f'--env ENV="{getConfigEnv(os.path.join(INSTALL_DIR, """config""", """config.yaml"""))}" '
         f'satorinet/satorineuron:{version} ./start.sh'),
         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
