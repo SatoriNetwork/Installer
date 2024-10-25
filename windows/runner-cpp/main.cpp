@@ -42,6 +42,7 @@ int main() {
               << " -v %APPDATA%\\Satori\\data:/Satori/Neuron/data"
               << " -v %APPDATA%\\Satori\\models:/Satori/Neuron/models"
               << " --env ENV=prod satorinet/satorineuron:latest ./start.sh\n";
+              //<< "infinite loop look at endpoint - if response, restart docker";
 
         batch.close();
 
