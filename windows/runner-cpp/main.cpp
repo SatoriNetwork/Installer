@@ -90,6 +90,7 @@ int main() {
               << ")\n"
               << "goto check_loop\n"
               << "\n";
+              // we'll hit the code version endpoint inside the image itself.
 
         batch.close();
 
