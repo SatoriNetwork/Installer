@@ -37,6 +37,7 @@ int main() {
               << "docker pull satorinet/satorineuron:latest\n"
               << "timeout /T 10 /nobreak > NUL\n"
               << "docker run --rm -it --name satorineuron -p 24601:24601"
+              << "start http://localhost:24601"
               << " -v %APPDATA%\\Satori\\wallet:/Satori/Neuron/wallet"
               << " -v %APPDATA%\\Satori\\config:/Satori/Neuron/config"
               << " -v %APPDATA%\\Satori\\data:/Satori/Neuron/data"
@@ -50,10 +51,6 @@ int main() {
         std::cout << "Starting Satori...\n";
         ShellExecute(NULL, "open", startupPath.string().c_str(),
                     NULL, NULL, SW_SHOWNORMAL);
-
-        // std::cout << "Satori started successfully!\n";
-        // std::cout << "Press Enter to exit...";
-        // std::cin.get();
 
         return 0;
 
