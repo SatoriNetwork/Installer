@@ -89,7 +89,7 @@ int main() {
 
         // Launch the batch file
         std::cout << "Starting Satori...\n";
-        ShellExecute(NULL, L"open", startupPath.c_str(),
+        ShellExecuteW(NULL, L"open", startupPath.c_str(),
                     NULL, NULL, SW_SHOWNORMAL);
 
         return 0;
