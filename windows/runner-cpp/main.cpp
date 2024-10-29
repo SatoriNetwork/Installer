@@ -4,19 +4,15 @@
 #include <windows.h>
 #include <string>
 
-// Conversion function from narrow string to wide string
-std::wstring stringToWString(const std::string& str) {
-    return std::wstring(str.begin(), str.end());
-}
 
 int main() {
     try {
         // Get AppData path
-        wchar_t appdata[MAX_PATH];
-        if (!GetEnvironmentVariableW(L"APPDATA", appdata, MAX_PATH)) {
-            throw std::runtime_error("Failed to get APPDATA environment variable");
-        }
-        std::filesystem::path satoriPath = std::filesystem::path(appdata) / L"Satori";
+        char* appdata = nullptr;
+        size_t len;
+        _dupenv_s(&appdata, &len, "APPDATA");
+        std::filesystem::path satoriPath = std::filesystem::path(appdata) / "Satori";
+        free(appdata);
 
         // Create required folders
         std::cout << "Creating Satori folders...\n";
@@ -27,9 +23,8 @@ int main() {
 
         // Create startup batch file
         std::cout << "Creating startup script...\n";
-        auto startupPath = std::filesystem::path(appdata) /
-                          L"Microsoft/Windows/Start Menu/Programs/Startup/satori.bat";
-        // Example ?? LPCWSTR filePath = stringToWString("open").c_str();
+        auto startupPath = std::filesystem::path(getenv("APPDATA")) /
+                          "Microsoft/Windows/Start Menu/Programs/Startup/satori.bat";
 
         std::ofstream batch(startupPath);
         if (!batch) {
@@ -91,7 +86,7 @@ int main() {
 
         // Launch the batch file
         std::cout << "Starting Satori...\n";
-        ShellExecute(NULL, L"open", startupPath.c_str(),
+        ShellExecute(NULL, "open", startupPath.string().c_str(),
                     NULL, NULL, SW_SHOWNORMAL);
 
         return 0;
