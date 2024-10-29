@@ -2,7 +2,6 @@
 title Satori Neuron
 :restart
 start "docker" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
-REM timeout /T 30 /nobreak > NUL
 :wait_for_docker
 docker info >nul 2>&1
 if %ERRORLEVEL% neq 0 (
@@ -14,12 +13,15 @@ docker stop satorineuron >nul 2>&1
 docker pull satorinet/satorineuron:latest
 start http://localhost:24601
 docker run --rm -it --name satorineuron -p 24601:24601 -v %APPDATA%\Satori\wallet:/Satori/Neuron/wallet -v %APPDATA%\Satori\config:/Satori/Neuron/config -v %APPDATA%\Satori\data:/Satori/Neuron/data -v %APPDATA%\Satori\models:/Satori/Neuron/models --env ENV=prod satorinet/satorineuron:latest ./start.sh
-
 echo.
 if %ERRORLEVEL% EQU 0 (
     echo Container shutting down
     exit
 ) else if %ERRORLEVEL% EQU 1 (
+    echo Restarting and updating Container
+    goto restart
+) else if %ERRORLEVEL% EQU 2 (
+    REM this should never be seen as it is intercepted by app.py and handled to just restart satori within the container
     echo Restarting and updating Container
     goto restart
 ) else if %ERRORLEVEL% EQU 125 (
