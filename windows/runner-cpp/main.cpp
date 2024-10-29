@@ -52,13 +52,7 @@ int main() {
               << "\n"
               << "REM Pull the latest Docker image\n"
               << "docker pull %image_name%\n"
-              << "timeout /T 10 /nobreak > NUL\n"
-              << "\n"
-              << "REM Get the hash of the image by inspecting it\n"
-              << "for /f \"tokens=*\" %%i in ('docker inspect --format \"{{.Id}}\" %image_name%') do set prior_image_hash=%%i\n"
-              << "\n"
-              << "REM Display the hash\n"
-              << "echo Docker Image Hash: %prior_image_hash%\n"
+              << "start http://localhost:24601\n"
               << "\n"
               << "REM Run the Docker container\n"
               << "docker run --rm -it --name satorineuron -p 24601:24601"
@@ -98,10 +92,6 @@ int main() {
         std::cout << "Starting Satori...\n";
         ShellExecute(NULL, "open", startupPath.string().c_str(),
                     NULL, NULL, SW_SHOWNORMAL);
-
-        // std::cout << "Satori started successfully!\n";
-        // std::cout << "Press Enter to exit...";
-        // std::cin.get();
 
         return 0;
 
