@@ -3,10 +3,45 @@
 #include <filesystem>
 #include <windows.h>
 #include <string>
+#include <shlobj.h>
+#include <shobjidl.h>
+#include <locale>
+#include <codecvt>
 
-// Conversion function from narrow string to wide string
-std::wstring stringToWString(const std::string& str) {
-    return std::wstring(str.begin(), str.end());
+// Conversion function from wide string to narrow string
+std::string wstringToString(const std::wstring& wstr) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+    return converter.to_bytes(wstr);
+}
+
+void createDesktopShortcut(const std::wstring& targetPath, const std::wstring& shortcutPath, const std::wstring& description) {
+    HRESULT hres;
+    CoInitialize(NULL);
+
+    // Get a pointer to the IShellLink interface.
+    IShellLink* psl = nullptr;
+    hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void**)&psl);
+    if (SUCCEEDED(hres)) {
+        // Set the path to the executable and description
+        psl->SetPath(wstringToString(targetPath).c_str());
+        psl->SetDescription(wstringToString(description).c_str());
+
+        // Set the icon location to the executable itself
+        psl->SetIconLocation(wstringToString(targetPath).c_str(), 0);
+
+        // Query IShellLink for the IPersistFile interface for saving the shortcut.
+        IPersistFile* ppf = nullptr;
+        hres = psl->QueryInterface(IID_IPersistFile, (void**)&ppf);
+
+        if (SUCCEEDED(hres)) {
+            // Save the shortcut. Use IPersistFile::Save to save the .lnk file.
+            hres = ppf->Save(shortcutPath.c_str(), TRUE);
+            ppf->Release();
+        }
+        psl->Release();
+    }
+
+    CoUninitialize();
 }
 
 int main() {
@@ -18,11 +53,26 @@ int main() {
         }
         std::filesystem::path satoriPath = std::filesystem::path(appdata) / L"Satori";
 
-        // Create required folders
+        // Create required folders (only creates if they don't already exist)
         std::cout << "Creating Satori folders...\n";
         std::vector<std::string> folders = {"config", "data", "models", "wallet"};
         for (const auto& folder : folders) {
             std::filesystem::create_directories(satoriPath / folder);
+        }
+
+        // Get the current executable path
+        wchar_t exePath[MAX_PATH];
+        if (!GetModuleFileNameW(NULL, exePath, MAX_PATH)) {
+            throw std::runtime_error("Failed to get current executable path");
+        }
+
+        // Copy the executable to the satoriPath directory if it doesn't already exist
+        std::filesystem::path targetExePath = satoriPath / L"satori_neuron.exe";
+        if (!std::filesystem::exists(targetExePath)) {
+            std::cout << "Copying executable to Satori folder...\n";
+            std::filesystem::copy_file(exePath, targetExePath, std::filesystem::copy_options::overwrite_existing);
+        } else {
+            std::cout << "Executable already exists. Skipping copy.\n";
         }
 
         // Create startup batch file
@@ -89,9 +139,23 @@ int main() {
 
         // Launch the batch file
         std::cout << "Starting Satori...\n";
-        ShellExecuteW(NULL, L"open", startupPath.c_str(),
-                    NULL, NULL, SW_SHOWNORMAL);
+        ShellExecuteW(NULL, L"open", startupPath.c_str(), NULL, NULL, SW_SHOWNORMAL);
 
+        // Create Desktop Shortcut if it doesn't already exist
+        wchar_t desktopPath[MAX_PATH];
+        if (SHGetFolderPathW(NULL, CSIDL_DESKTOP, NULL, 0, desktopPath) != S_OK) {
+            throw std::runtime_error("Failed to get Desktop folder path");
+        }
+
+        std::wstring shortcutPath = std::wstring(desktopPath) + L"\\Satori.lnk";
+        if (!std::filesystem::exists(shortcutPath)) {
+            std::cout << "Creating desktop shortcut...\n";
+            createDesktopShortcut(targetExePath, shortcutPath, L"Satori Neuron");
+        } else {
+            std::cout << "Desktop shortcut already exists. Skipping creation.\n";
+        }
+
+        std::cout << "Setup completed successfully!\n";
         return 0;
 
     } catch (const std::exception& e) {
