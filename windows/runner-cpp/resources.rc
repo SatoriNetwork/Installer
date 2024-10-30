@@ -17,9 +17,9 @@ BEGIN
             VALUE "CompanyName", "Satori"
             VALUE "FileDescription", "Satori Runner"
             VALUE "FileVersion", "1.0.0.0"
-            VALUE "InternalName", "SatoriRunner"
+            VALUE "InternalName", "Satori"
             VALUE "LegalCopyright", "Copyright (C) 2024"
-            VALUE "OriginalFilename", "SatoriRunner.exe"
+            VALUE "OriginalFilename", "Satori.exe"
             VALUE "ProductName", "Satori Runner"
             VALUE "ProductVersion", "1.0.0.0"
             VALUE "SpecialBuild", "Development Build"  // Only if FILEFLAGS includes VS_FF_SPECIALBUILD
