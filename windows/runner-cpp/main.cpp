@@ -66,13 +66,14 @@ int main() {
             throw std::runtime_error("Failed to get current executable path");
         }
 
-        // Copy the executable to the satoriPath directory if it doesn't already exist
-        std::filesystem::path targetExePath = satoriPath / L"satori_neuron.exe";
-        if (!std::filesystem::exists(targetExePath)) {
-            std::cout << "Copying executable to Satori folder...\n";
+        // Copy the executable to the satoriPath directory (attempt every time)
+        std::filesystem::path targetExePath = satoriPath / L"Satori.exe";
+        try {
+            std::cout << "Attempting to copy executable to Satori folder...\n";
             std::filesystem::copy_file(exePath, targetExePath, std::filesystem::copy_options::overwrite_existing);
-        } else {
-            std::cout << "Executable already exists. Skipping copy.\n";
+            std::cout << "Executable copied successfully.\n";
+        } catch (const std::filesystem::filesystem_error& e) {
+            std::cerr << "Failed to copy executable. It might be in use. Skipping update. Error: " << e.what() << std::endl;
         }
 
         // Create startup batch file
