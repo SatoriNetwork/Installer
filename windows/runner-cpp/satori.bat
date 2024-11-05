@@ -12,7 +12,7 @@ if %ERRORLEVEL% neq 0 (
 docker stop satorineuron >nul 2>&1
 docker pull satorinet/satorineuron:latest
 start http://localhost:24601
-docker run --rm -it --name satorineuron -p 24601:24601 -v %APPDATA%\Satori\wallet:/Satori/Neuron/wallet -v %APPDATA%\Satori\config:/Satori/Neuron/config -v %APPDATA%\Satori\data:/Satori/Neuron/data -v %APPDATA%\Satori\models:/Satori/Neuron/models --env ENV=prod satorinet/satorineuron:latest ./start.sh
+docker run --rm -it --name satorineuron -p 24601:24601 -v "%APPDATA%\Satori\wallet:/Satori/Neuron/wallet" -v "%APPDATA%\Satori\config:/Satori/Neuron/config" -v "%APPDATA%\Satori\data:/Satori/Neuron/data" -v "%APPDATA%\Satori\models:/Satori/Neuron/models" --env ENV=prod satorinet/satorineuron:latest ./start.sh
 echo.
 if %ERRORLEVEL% EQU 0 (
     echo Container shutting down
