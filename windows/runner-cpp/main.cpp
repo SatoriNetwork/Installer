@@ -100,7 +100,7 @@ int main() {
               << "docker stop satorineuron >nul 2>&1\n"
               << "docker pull satorinet/satorineuron:latest\n"
               << "start http://localhost:24601\n"
-              << "docker run --rm -it --name satorineuron -p 127.0.0.1:24601:24601 -v \"%APPDATA%\\Satori\\wallet:/Satori/Neuron/wallet\" -v \"%APPDATA%\\Satori\\config:/Satori/Neuron/config\" -v \"%APPDATA%\\Satori\\data:/Satori/Neuron/data\" -v \"%APPDATA%\\Satori\\models:/Satori/Neuron/models\" --env ENV=prod satorinet/satorineuron:latest ./start.sh\n"
+              << "docker run --rm -it --name satorineuron -p 127.0.0.1:24601:24601 --cpus=\"0.9\" -v \"%APPDATA%\\Satori\\wallet:/Satori/Neuron/wallet\" -v \"%APPDATA%\\Satori\\config:/Satori/Neuron/config\" -v \"%APPDATA%\\Satori\\data:/Satori/Neuron/data\" -v \"%APPDATA%\\Satori\\models:/Satori/Neuron/models\" --env ENV=prod satorinet/satorineuron:latest ./start.sh\n"
               << "echo.\n"
               << "if %ERRORLEVEL% EQU 0 (\n"
               << "    echo Container shutting down\n"
