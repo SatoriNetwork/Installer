@@ -157,7 +157,6 @@ def startSatoriNeuronNative(version: str) -> subprocess.Popen:
     return subprocess.Popen((
         'docker run -t --rm --name satorineuron '
         '-p 127.0.0.1:24601:24601 '
-        '--cpus="0.9" '
         f'-v "{os.path.join(INSTALL_DIR, """wallet""")}:/Satori/Neuron/wallet" '
         f'-v "{os.path.join(INSTALL_DIR, """config""")}:/Satori/Neuron/config" '
         f'-v "{os.path.join(INSTALL_DIR, """data""")}:/Satori/Neuron/data" '
