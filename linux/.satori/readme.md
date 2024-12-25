@@ -66,5 +66,7 @@ sudo systemctl status satori.service
 
 You can even watch the logs:
 ```
+docker logs -f satorineuron
+# or
 journalctl -fu satori.service
 ```
