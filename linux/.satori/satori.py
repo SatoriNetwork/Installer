@@ -156,7 +156,7 @@ def getConfigEnv(configPath: str) -> str:
 def startSatoriNeuronNative(version: str) -> subprocess.Popen:
     return subprocess.Popen((
         'docker run -t --rm --name satorineuron '
-        '-p 127.0.0.1:24601:24601 '
+        '-p 24601:24601 '
         #'--cpus="$(echo "$(nproc) * 0.9" | bc)" '
         #'--memory="$(free -b | awk -v percent=90 \'/Mem:/ {printf "%.0f", $2 * (percent / 100)}\')" '
         #'--memory-swap="$(free -b | awk -v percent=90 \'/Mem:/ {printf "%.0f", $2 * (percent / 100)}\')" '
@@ -241,7 +241,7 @@ def runSatori():
 
 def runForever():
     installSatori()
-    runHost()
+    #runHost()
     runSatori()
 
 

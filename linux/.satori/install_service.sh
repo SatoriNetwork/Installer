@@ -4,7 +4,7 @@ CURRENT_DIR=$(pwd)
 SERVICE_FILE="$CURRENT_DIR/satori.service"
 CURRENT_USER=$(whoami)
 # give user permission to run docker without sudo
-if groups $CURRENT_USER | grep -q docker; then
+if groups $USER | grep -q docker; then
     echo "User has docker permissions."
 else
     echo "Giving user docker permissions. Please try again."
