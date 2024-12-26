@@ -101,7 +101,6 @@ start_docker() {
     fi
 }
 
-
 remove_dangling_images() {
     echo "Removing dangling images for satorinet/satorineuron..."
     # Get a list of dangling image IDs for the specified reference
@@ -116,38 +115,53 @@ remove_dangling_images() {
     fi
 }
 
-get_config_env() {
+get_config_value() {
     local config_path="$1"
+    local key="$2"
+    local default_value="prod"
     # Check if the config file exists
     if [[ -f "$config_path" ]]; then
         # Read the file line by line
         while IFS= read -r line; do
-            # Check if the line starts with "env:"
-            if [[ "$line" == env:* ]]; then
-                # Extract and return the value after "env:"
-                echo "${line#env:}" | xargs
+            # Check if the line starts with the specified key
+            if [[ "$line" == "$key:"* ]]; then
+                # Extract and return the value after the key
+                echo "${line#$key:}" | xargs
+                return
+            elif [[ "$line" == "$key="* ]]; then
+                # For RUNMODE case
+                echo "${line#$key=}" | xargs
                 return
             fi
         done < "$config_path"
     fi
     # Default value if not found
-    echo "prod"
+    echo "$default_value"
 }
 
 run_container() {
     echo "Starting Satori Neuron container..."
     # Define the config path and get the ENV value
     local config_path="$HOME/.satori/config/config.yaml"
-    local env_value
-    env_value=$(get_config_env "$config_path")
+    local env_path="$HOME/.satori/config/.env"
+    local env_value=$(get_config_value "$config_path" "env")
+    local run_value=$(get_config_value "$env_path" "RUNMODE")
     # Stop any running container and pull the latest image
     docker stop satorineuron >/dev/null 2>&1 || true
     docker pull satorinet/satorineuron:latest
     remove_dangling_images
     # Open the browser
     xdg-open http://localhost:24601 >/dev/null 2>&1 || echo "Unable to open browser."
+    # Determine the port mapping based on run_value
+    # should 127.0.0.1:24601 be the new headless mode?
+    local port_mapping
+    if [[ "$run_value" == "worker" ]]; then
+        port_mapping="-p 127.0.0.1:24601:24601"
+    else
+        port_mapping="-p 24601:24601"
+    fi
     # Run the container with the dynamically determined ENV value
-    docker run --rm --name satorineuron -p 24601:24601 \
+    docker run --rm --name satorineuron $port_mapping \
         -v "$HOME/.satori/wallet:/Satori/Neuron/wallet" \
         -v "$HOME/.satori/config:/Satori/Neuron/config" \
         -v "$HOME/.satori/data:/Satori/Neuron/data" \
