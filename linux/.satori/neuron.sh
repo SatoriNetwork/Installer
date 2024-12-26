@@ -207,6 +207,7 @@ main() {
     setup_directory
     start_docker
     while true; do
+        log "to see logs use command: docker logs -f satorineuron"
         log "Running Satori Neuron container..."
         run_container
         exit_code=$?
