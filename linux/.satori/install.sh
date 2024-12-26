@@ -108,6 +108,30 @@ install_service() {
     fi
 }
 
+check_service_status() {
+    # next run a function that prints out the results of 'systemctl status satori.service' to confirm that the service is running
+    log "Checking the status of satori.service..."
+    systemctl status satori.service
+}
+
+wait_for_docker_image() {
+    # next run a function that loops and waits and checks for docker to have a image called `satorinet/satorineuron:latest`
+    local image="satorinet/satorineuron:latest"
+    log "Waiting for Docker to have the image '$image'..."
+    while ! docker images | grep -q "$image"; do
+        log "Waiting for '$image' to download, please wait..."
+        sleep 60
+    done
+    log "Image '$image' found."
+}
+
+watch_docker_logs() {
+    # next when that finally finishes lets watch, forever, the 'docker logs -f satori' command
+    log "Watching Docker logs for the 'satori' container..."
+    docker logs -f satori
+}
+
+
 welcome
 log "setting up directories"
 setup_directory
@@ -115,4 +139,8 @@ log "making scripts executable"
 make_executable
 log "installing service"
 install_service
-log "done"
+log "done installing"
+check_service_status
+wait_for_docker_image
+log "watching logs"
+watch_docker_logs
