@@ -118,7 +118,7 @@ wait_for_docker_image() {
     # next run a function that loops and waits and checks for docker to have a image called `satorinet/satorineuron:latest`
     local image="satorinet/satorineuron:latest"
     log "Waiting for Docker to have the image '$image'..."
-    while ! docker images | grep -q "$image"; do
+    while ! docker ps -a | grep -q "$image"; do
         log "Waiting for '$image' to download, please wait..."
         sleep 60
     done
@@ -128,7 +128,7 @@ wait_for_docker_image() {
 watch_docker_logs() {
     # next when that finally finishes lets watch, forever, the 'docker logs -f satori' command
     log "Watching Docker logs for the 'satori' container..."
-    docker logs -f satori
+    docker logs -f satorineuron
 }
 
 
