@@ -35,7 +35,7 @@ sudo yum install zip unzip wget curl
 Then you can download and unzip Satori:
 ```
 cd ~
-wget -P ~/ https://satorinet.io/static/download/satori.zip
+wget -P ~/ https://satorinet.io/static/download/linux/satori.zip
 unzip ~/satori.zip
 rm ~/satori.zip
 cd ~/.satori
