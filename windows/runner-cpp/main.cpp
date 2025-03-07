@@ -55,7 +55,7 @@ int main() {
 
         // Create required folders (only creates if they don't already exist)
         std::cout << "Creating Satori folders...\n";
-        std::vector<std::string> folders = {"config", "data", "models", "wallet"};
+        std::vector<std::string> folders = {"run", "config", "data", "models", "wallet"};
         for (const auto& folder : folders) {
             std::filesystem::create_directories(satoriPath / folder);
         }
@@ -100,7 +100,7 @@ int main() {
               << "docker stop satorineuron >nul 2>&1\n"
               << "docker pull satorinet/satorineuron:latest\n"
               << "start http://localhost:24601\n"
-              << "docker run --rm -it --name satorineuron -p 24601:24601 --cpus=\"0.9\" -v \"%APPDATA%\\Satori\\wallet:/Satori/Neuron/wallet\" -v \"%APPDATA%\\Satori\\config:/Satori/Neuron/config\" -v \"%APPDATA%\\Satori\\data:/Satori/Neuron/data\" -v \"%APPDATA%\\Satori\\models:/Satori/Neuron/models\" --env ENV=prod satorinet/satorineuron:latest ./start.sh\n"
+              << "docker run --rm -it --name satorineuron -p 24600:24600 -p 24601:24601 --cpus=\"0.9\" -v \"%APPDATA%\\Satori\\run:/Satori/Neuron/run\" -v \"%APPDATA%\\Satori\\wallet:/Satori/Neuron/wallet\" -v \"%APPDATA%\\Satori\\config:/Satori/Neuron/config\" -v \"%APPDATA%\\Satori\\data:/Satori/Neuron/data\" -v \"%APPDATA%\\Satori\\models:/Satori/Neuron/models\" --env ENV=prod satorinet/satorineuron:latest ./start.sh\n"
               << "echo.\n"
               << "if %ERRORLEVEL% EQU 0 (\n"
               << "    echo Container shutting down\n"

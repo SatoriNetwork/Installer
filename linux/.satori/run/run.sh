@@ -1,29 +1,4 @@
-#!/bin/bash
-
-# upgrade Process:
-# 0. modify Satori/Neuron, make a new image put that image version in here (TAG)
-# 1. if scripts/*.py modified, follow instructions within to update the hash
-# 2. push Satori/Neuron to github, and satorinet/satorineuron=vX image to docker hub
-# 3. modify this file
-# 4. using windows linux subsystem (WSL) zip up all contents of satori folder:
-# 5. copy to download static folder of Central:
-#   ```
-#   cd /mnt/c/repos/Satori/Installer/linux
-#   rm -rf satori.zip
-#   zip -r satori.zip .satori
-#   cp /mnt/c/repos/Satori/Installer/linux/satori.zip /mnt/c/repos/Satori/Central/satoricentral/server/static/download/linux/
-#   echo "done"
-#
-#   ```
-# 6. push Installer and Central, `cycle` on server
-
-if ! source "$(dirname "$0")/run/run.sh"; then
-    echo "Failed to load run.sh, running with defaults."
-fi
-
-echo "Satori Neuron"
-
-default_welcome() {
+welcome() {
     local local_url="http://localhost:24601"
     echo "
                                       @@@@
@@ -76,7 +51,7 @@ And hold tight, this may take several minutes...
 "
 }
 
-default_setup_directory() {
+setup_directory() {
     # Define the install directory
     local INSTALL_DIR="$HOME/.satori"
     # Create the necessary directories if they don't already exist
@@ -88,7 +63,7 @@ default_setup_directory() {
     echo "Directories set up at $INSTALL_DIR"
 }
 
-default_start_docker() {
+start_docker() {
     # Ensure Docker is running and accessible
     if ! docker info >/dev/null 2>&1; then
         echo "Docker is not accessible. Please ensure you have the necessary permissions."
@@ -106,7 +81,7 @@ default_start_docker() {
     fi
 }
 
-default_remove_dangling_images() {
+remove_dangling_images() {
     echo "Removing dangling images for satorinet/satorineuron..."
     # Get a list of dangling image IDs for the specified reference
     local dangling_images
@@ -120,7 +95,7 @@ default_remove_dangling_images() {
     fi
 }
 
-default_get_config_value() {
+get_config_value() {
     local config_path="$1"
     local key="$2"
     local default_value="prod"
@@ -144,17 +119,17 @@ default_get_config_value() {
     echo "$default_value"
 }
 
-default_run_container() {
+run_container() {
     echo "Starting Satori Neuron container..."
     # Define the config path and get the ENV value
     local config_path="$HOME/.satori/config/config.yaml"
     local env_path="$HOME/.satori/config/.env"
-    local env_value=$(default_get_config_value "$config_path" "env")
-    local run_value=$(default_get_config_value "$env_path" "RUNMODE")
+    local env_value=$(get_config_value "$config_path" "env")
+    local run_value=$(get_config_value "$env_path" "RUNMODE")
     # Stop any running container and pull the latest image
     docker stop satorineuron >/dev/null 2>&1 || true
     docker pull satorinet/satorineuron:latest
-    default_remove_dangling_images
+    remove_dangling_images
     # Open the browser
     xdg-open http://localhost:24601 >/dev/null 2>&1 || echo "Unable to open browser."
     # Determine the port mapping based on run_value
@@ -177,7 +152,7 @@ default_run_container() {
     return $?
 }
 
-default_handle_exit_code() {
+handle_exit_code() {
     local exit_code=$1
     case $exit_code in
         0)
@@ -218,38 +193,6 @@ default_handle_exit_code() {
     esac
 }
 
-default_log() {
+log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"
 }
-
-main() {
-    if ! welcome; then
-        default_welcome
-    fi
-    if ! setup_directory; then
-        default_setup_directory
-    fi
-    if ! start_docker; then
-        default_start_docker
-    fi
-    while true; do
-        if ! default_log "to see logs use command: docker logs -f satorineuron"; then
-            default_log "to see logs use command: docker logs -f satorineuron"
-        fi
-        if ! log "Running Satori Neuron container..."; then
-            default_log "Running Satori Neuron container..."
-        fi
-        if ! run_container; then
-            deafult_run_container
-        fi
-        exit_code=$?
-        if ! log "Container exited with code $exit_code."; then
-            default_log "Container exited with code $exit_code."
-        fi
-        if ! handle_exit_code $exit_code; then
-            default_handle_exit_code $exit_code
-        fi
-    done
-}
-
-main

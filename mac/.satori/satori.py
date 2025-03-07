@@ -103,6 +103,7 @@ And hold tight, this may take several minutes...
 
 def setupDirectory():
     ''' setup directory to mount to /wallet /config /data /models'''
+    os.makedirs(os.path.join(INSTALL_DIR, 'run'), exist_ok=True)
     os.makedirs(os.path.join(INSTALL_DIR, 'wallet'), exist_ok=True)
     os.makedirs(os.path.join(INSTALL_DIR, 'config'), exist_ok=True)
     os.makedirs(os.path.join(INSTALL_DIR, 'data'), exist_ok=True)
@@ -155,7 +156,9 @@ def getConfigEnv(configPath: str) -> str:
 def startSatoriNeuronNative(version: str) -> subprocess.Popen:
     return subprocess.Popen((
         'docker run -t --rm --name satorineuron '
+        '-p 24600:24600 '
         '-p 24601:24601 '
+        f'-v "{os.path.join(INSTALL_DIR, """run""")}:/Satori/Neuron/run" '
         f'-v "{os.path.join(INSTALL_DIR, """wallet""")}:/Satori/Neuron/wallet" '
         f'-v "{os.path.join(INSTALL_DIR, """config""")}:/Satori/Neuron/config" '
         f'-v "{os.path.join(INSTALL_DIR, """data""")}:/Satori/Neuron/data" '
