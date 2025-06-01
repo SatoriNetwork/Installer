@@ -9,7 +9,7 @@
    - Enable "Use host networking"
    - Restart Docker Desktop
 
-![Enable host networking](materials/host-networking.gif)
+![Enable host networking](readme/materials/host-networking.gif)
 
 
 ## Installation
@@ -29,7 +29,7 @@ Place your `wallet.yaml` and `vault.yaml` files into the `wallet` folder if you 
 ### 4. Add Old Data and Models (Optional)
 If you are using an existing wallet, you can also copy all the data-stream ( containing csv and readme.md ) and model folders  residing inside the `data` and `models\veda`  folder of the old Neuron into the `data` folder and `models\veda` of this directory.
 
-![Transfer data](materials/data.gif)
+![Transfer data](readme/materials/data.gif)
 
 ### 5. Update Docker Compose Configuration
 Edit `docker-compose.yaml` and update the volume paths with where the file is located:
