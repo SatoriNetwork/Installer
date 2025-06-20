@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  satori:
+    image: satorinet/satorineuron:p2p
+    container_name: satorip2p # Name of the container
+    restart: unless-stopped
+    network_mode: "host" # Use host network mode for direct access to ports
+    volumes:
+      # For linux, use absolute paths or relative paths
+      - ~/satorip2p/mac/config:/Satori/Neuron/config
+      - ~/satorip2p/mac/wallet:/Satori/Neuron/wallet
+      - ~/satorip2p/mac/data:/Satori/Neuron/data
+      - ~/satorip2p/mac/models:/Satori/Neuron/models
+    environment:
+      - ENV=prod
+    deploy:
+      resources: # change this accordingly if needed 
+        limits:
+          cpus: "1.3"
+          memory: "3.5g"
+    stdin_open: true
+    tty: true
+    pull_policy: always
+    entrypoint: ["bash", "/Satori/Neuron/satorineuron/web/start.sh"]
