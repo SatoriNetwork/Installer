@@ -8,10 +8,16 @@ services:
     network_mode: "host"
     volumes:
       # For Windows, you can also use use absolute paths with drive letter and properly escaped back slashes
-      - ${APPDATA}/local/Satori/config:/Satori/Neuron/config
-      - ${APPDATA}/local/Satori/wallet:/Satori/Neuron/wallet
-      - ${APPDATA}/local/Satori/data:/Satori/Neuron/data
-      - ${APPDATA}/local/Satori/models:/Satori/Neuron/models
+      # Old Location
+      #- ${APPDATA}/local/Satori/config:/Satori/Neuron/config
+      #- ${APPDATA}/local/Satori/wallet:/Satori/Neuron/wallet
+      #- ${APPDATA}/local/Satori/data:/Satori/Neuron/data
+      #- ${APPDATA}/local/Satori/models:/Satori/Neuron/models
+      # New Loation
+      - ${HOME}/.satori/config:/Satori/Neuron/config
+      - ${HOME}/.satori/wallet:/Satori/Neuron/wallet
+      - ${HOME}/.satori/data:/Satori/Neuron/data
+      - ${HOME}/.satori/models:/Satori/Neuron/models
     environment:
       - ENV=prod
     deploy: # change or remove as desired 
