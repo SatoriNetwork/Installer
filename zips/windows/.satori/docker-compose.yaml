@@ -7,10 +7,11 @@ services:
     restart: unless-stopped
     network_mode: "host"
     volumes:
-      - ~/.satori/config:/Satori/Neuron/config
-      - ~/.satori/wallet:/Satori/Neuron/wallet
-      - ~/.satori/data:/Satori/Neuron/data
-      - ~/.satori/models:/Satori/Neuron/models
+      # For Windows, you can also use use absolute paths with drive letter and properly escaped back slashes
+      - ${APPDATA}/local/Satori/config:/Satori/Neuron/config
+      - ${APPDATA}/local/Satori/wallet:/Satori/Neuron/wallet
+      - ${APPDATA}/local/Satori/data:/Satori/Neuron/data
+      - ${APPDATA}/local/Satori/models:/Satori/Neuron/models
     environment:
       - ENV=prod
     deploy: # change or remove as desired 

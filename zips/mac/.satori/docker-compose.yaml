@@ -7,10 +7,10 @@ services:
     restart: unless-stopped
     network_mode: "host"
     volumes:
-      - ~/.satori/config:/Satori/Neuron/config
-      - ~/.satori/wallet:/Satori/Neuron/wallet
-      - ~/.satori/data:/Satori/Neuron/data
-      - ~/.satori/models:/Satori/Neuron/models
+      - ~/.satori/mac/config:/Satori/Neuron/config
+      - ~/.satori/mac/wallet:/Satori/Neuron/wallet
+      - ~/.satori/mac/data:/Satori/Neuron/data
+      - ~/.satori/mac/models:/Satori/Neuron/models
     environment:
       - ENV=prod
     deploy: # change or remove as desired 

@@ -19,17 +19,10 @@
 
 ## Installation
 
-### 1. Get the satori.zip file
-
-you can get it from the opensource repository:
+### 1. Clone Repository
 ```bash
 git clone https://github.com/SatoriNetwork/Installer.git
-cd satori/linux
-```
-
-or the website 
-```bash
-wget -P ~/ https://stage.satorinet.io/static/download/linux/satori.zip
+cd satori-p2p/linux
 ```
 
 ### 2. Configure Ports
@@ -47,10 +40,10 @@ If you are using an existing wallet, you can also copy all the data-stream ( con
 Edit `docker-compose.yaml` and update the volume paths with where the file is located:
 ```yaml
 volumes:
-   - ~/.satori/linux/config:/Satori/Neuron/config
-   - ~/.satori/linux/wallet:/Satori/Neuron/wallet
-   - ~/.satori/linux/data:/Satori/Neuron/data
-   - ~/.satori/linux/models:/Satori/Neuron/models
+   - ~/satori-p2p/linux/config:/Satori/Neuron/config
+   - ~/satori-p2p/linux/wallet:/Satori/Neuron/wallet
+   - ~/satori-p2p/linux/data:/Satori/Neuron/data
+   - ~/satori-p2p/linux/models:/Satori/Neuron/models
 ```
 
 ### 6. Start Application
@@ -62,18 +55,18 @@ docker compose up -d
 
 ### View Logs
 ```bash
-docker logs -f satorineuron
+docker logs -f satorip2p
 ```
 
 ### View Individual Application Logs
 
-Satori runs three integrated programs in one container:
+Satori P2P runs three integrated programs in one container:
 - **Neuron** - Collects the Peer info from server, Powers the UI and more
 - **Data Server** - Data management
 - **Engine** - AI Engine
 
 ```cmd
-docker exec -it satorineuron bash
+docker exec -it satorip2p bash
 cat neuron.log
 cat data.log
 cat engine.log
