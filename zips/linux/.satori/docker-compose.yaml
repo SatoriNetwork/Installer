@@ -3,16 +3,14 @@ version: '3.8'
 services:
   satori:
     image: satorinet/satorineuron:p2p
-    container_name: satorip2p # Name of the container
+    container_name: satorineuron
     restart: unless-stopped
-    network_mode: "host" # Use host network mode for direct access to ports
+    network_mode: "host"
     volumes:
-      # For linux, use absolute paths or relative paths
-        # ex :  ~/satori/config:/Satori/Neuron/config
-      - ~/satorip2p/config:/Satori/Neuron/config
-      - ~/satorip2p/wallet:/Satori/Neuron/wallet
-      - ~/satorip2p/data:/Satori/Neuron/data
-      - ~/satorip2p/models:/Satori/Neuron/models
+      - ~/.satori/config:/Satori/Neuron/config
+      - ~/.satori/wallet:/Satori/Neuron/wallet
+      - ~/.satori/data:/Satori/Neuron/data
+      - ~/.satori/models:/Satori/Neuron/models
     environment:
       - ENV=prod
     deploy: 

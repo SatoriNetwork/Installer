@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   satori:
-    image: satorinet/satorineuron:latest
+    image: satorinet/satorineuron:p2p
     container_name: satorineuron
     restart: unless-stopped
     network_mode: "host"
