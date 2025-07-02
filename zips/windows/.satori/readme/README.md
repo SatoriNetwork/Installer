@@ -97,7 +97,13 @@ Windows Firewall typically doesn't block Docker containers when host networking 
 
 ### Using PowerShell (Run as Administrator)
 ```powershell
+# Allow localhost to access Satori UI
+New-NetFirewallRule -DisplayName "Satori UI Localhost" -Direction Inbound -Protocol TCP -LocalPort 24601 -RemoteAddress 127.0.0.1 -Action Allow
+
+# Block all remote access to Satori UI
+New-NetFirewallRule -DisplayName "Satori UI Block Remote" -Direction Inbound -Protocol TCP -LocalPort 24601 -RemoteAddress Any -Action Block
+
+# Allow remote access to Satori P2P server
 New-NetFirewallRule -DisplayName "Satori P2P Server" -Direction Inbound -Protocol TCP -LocalPort 24600 -Action Allow
-New-NetFirewallRule -DisplayName "Satori P2P UI" -Direction Inbound -Protocol TCP -LocalPort 24601 -Action Allow
 ```
 

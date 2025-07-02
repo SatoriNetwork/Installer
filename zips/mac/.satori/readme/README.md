@@ -81,6 +81,35 @@ docker compose down
 docker ps
 ```
 
+### Edit pf configuration
+Backup and edit:
+```bash
+sudo cp /etc/pf.conf /etc/pf.conf.bak
+sudo nano /etc/pf.conf
+```
+paste:
+```pf
+# Allow localhost to access Satori UI
+pass in quick on lo0 proto tcp from 127.0.0.1 to any port 24601
+
+# Block all remote access to Satori UI
+block in proto tcp from any to any port 24601
+
+# Allow remote access to Satori p2p server
+pass in proto tcp from any to any port 24600
+```
+Apply the config:
+```bash
+# Enable pf if it's not running
+sudo pfctl -e
+
+# Reload the config
+sudo pfctl -f /etc/pf.conf
+
+# Verify rules are loaded
+sudo pfctl -sr
+```
+
 ### Check Port Usage
 ```bash
 netstat -an | grep :24600
