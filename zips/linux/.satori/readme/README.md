@@ -96,29 +96,53 @@ docker ps
 
 **Ubuntu/Debian (UFW):**
 ```bash
+# Allow localhost to access Satori UI
+sudo ufw allow in on lo to any port 24601 proto tcp
+# Deny remote access to Satori UI
+sudo ufw deny in to any port 24601 proto tcp
+# Allow remote access to Satori p2p server
 sudo ufw allow 24600/tcp
-sudo ufw allow 24601/tcp
+# Reload and check status
 sudo ufw reload
+sudo ufw status numbered
 ```
 
 **Ubuntu/Debian (iptables):**
 ```bash
+# Allow localhost to access Satori UI
+sudo iptables -A INPUT -p tcp -s 127.0.0.1 --dport 24601 -j ACCEPT
+# Drop all other traffic to Satori UI
+sudo iptables -A INPUT -p tcp --dport 24601 -j DROP
+# Allow remote traffic to access Satori p2p server
 sudo iptables -I INPUT -p tcp --dport 24600 -j ACCEPT
-sudo iptables -I INPUT -p tcp --dport 24601 -j ACCEPT
 sudo iptables-save
+sudo iptables -L -n --line-numbers
 ```
 
 **CentOS/RHEL/Rocky Linux (firewalld):**
 ```bash
+# Allow localhost to access Satori UI
+sudo firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="127.0.0.1" port port="24601" protocol="tcp" accept'
+# Drop all other traffic to Satori UI
+sudo firewall-cmd --permanent --add-rich-rule='rule family="ipv4" port port="24601" protocol="tcp" drop'
+# Allow remote traffic to access Satori p2p server
 sudo firewall-cmd --permanent --add-port=24600/tcp
-sudo firewall-cmd --permanent --add-port=24601/tcp
 sudo firewall-cmd --reload
+# Check rules
+sudo firewall-cmd --list-all
 ```
 
 **Photon OS:**
 ```bash
+# Allow localhost to access Satori UI
+sudo iptables -A INPUT -p tcp -s 127.0.0.1 --dport 24601 -j ACCEPT
+# Drop all other traffic to Satori UI
+sudo iptables -A INPUT -p tcp --dport 24601 -j DROP
+# Allow remote traffic to access Satori p2p server
 sudo iptables -I INPUT -p tcp --dport 24600 -j ACCEPT
-sudo iptables -I INPUT -p tcp --dport 24601 -j ACCEPT
+# Check and save rules
+sudo iptables-save
+sudo iptables -L -n --line-numbers
 ```
 
 ### Check Port Usage
