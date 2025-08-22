@@ -13,11 +13,11 @@ services:
       - ~/.satori/mac/models:/Satori/Neuron/models
     environment:
       - ENV=prod
-    deploy: # change or remove as desired 
-      resources: # this limits the resources
-        limits:
-          cpus: "1.3"
-          memory: "3.5g"
+    # deploy: # change or remove as desired 
+    #   resources: # this limits the resources
+    #     limits:
+    #       cpus: "1.3"
+    #       memory: "3.5g"
     stdin_open: true
     tty: true
     pull_policy: always
