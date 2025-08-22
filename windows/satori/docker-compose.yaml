@@ -14,10 +14,10 @@ services:
       #- ${APPDATA}/local/Satori/data:/Satori/Neuron/data
       #- ${APPDATA}/local/Satori/models:/Satori/Neuron/models
       # New Loation
-      - ${HOME}/.satori/config:/Satori/Neuron/config
-      - ${HOME}/.satori/wallet:/Satori/Neuron/wallet
-      - ${HOME}/.satori/data:/Satori/Neuron/data
-      - ${HOME}/.satori/models:/Satori/Neuron/models
+      - ${HOME}/satori/config:/Satori/Neuron/config
+      - ${HOME}/satori/wallet:/Satori/Neuron/wallet
+      - ${HOME}/satori/data:/Satori/Neuron/data
+      - ${HOME}/satori/models:/Satori/Neuron/models
     environment:
       - ENV=prod
     # deploy: # change or remove as desired 

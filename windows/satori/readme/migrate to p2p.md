@@ -58,26 +58,26 @@ ren "%APPDATA%\local\Satori" "Satori-original"
 ## 9) Create New P2P Folder
 Create the new Satori P2P folder:
 ```
-mkdir "%USERPROFILE%\.satori"
+mkdir "%USERPROFILE%\satori"
 ```
 
 ## 10) Copy and Paste Existing Folders into P2P Folder
-Delete huggingface/ folder found inside `.satori/models/` after copying existing folders to P2P folder
+Delete huggingface/ folder found inside `satori/models/` after copying existing folders to P2P folder
 ```
-xcopy "%APPDATA%\local\Satori-original\config" "%USERPROFILE%\.satori\config" /E /I
-xcopy "%APPDATA%\local\Satori-original\wallet" "%USERPROFILE%\.satori\wallet" /E /I
-xcopy "%APPDATA%\local\Satori-original\data" "%USERPROFILE%\.satori\data" /E /I
-xcopy "%APPDATA%\local\Satori-original\models" "%USERPROFILE%\.satori\models" /E /I
+xcopy "%APPDATA%\local\Satori-original\config" "%USERPROFILE%\satori\config" /E /I
+xcopy "%APPDATA%\local\Satori-original\wallet" "%USERPROFILE%\satori\wallet" /E /I
+xcopy "%APPDATA%\local\Satori-original\data" "%USERPROFILE%\satori\data" /E /I
+xcopy "%APPDATA%\local\Satori-original\models" "%USERPROFILE%\satori\models" /E /I
 ```
 
 Remove the huggingface folder:
 ```
-rmdir /S /Q "%USERPROFILE%\.satori\models\huggingface"
+rmdir /S /Q "%USERPROFILE%\satori\models\huggingface"
 ```
 
 ## 11) Navigate into P2P Folder and Edit Config File
 ```
-cd "%USERPROFILE%\.satori"
+cd "%USERPROFILE%\satori"
 notepad config\config.yaml
 ```
 
@@ -120,10 +120,10 @@ services:
     restart: unless-stopped
     network_mode: "host"
     volumes:
-      - ${USERPROFILE}/.satori/config:/Satori/Neuron/config
-      - ${USERPROFILE}/.satori/wallet:/Satori/Neuron/wallet
-      - ${USERPROFILE}/.satori/data:/Satori/Neuron/data
-      - ${USERPROFILE}/.satori/models:/Satori/Neuron/models
+      - ${USERPROFILE}/satori/config:/Satori/Neuron/config
+      - ${USERPROFILE}/satori/wallet:/Satori/Neuron/wallet
+      - ${USERPROFILE}/satori/data:/Satori/Neuron/data
+      - ${USERPROFILE}/satori/models:/Satori/Neuron/models
     environment:
       - ENV=prod
     deploy: # change or remove as desired 
@@ -158,15 +158,15 @@ cat engine.log
 
 ## Important Extras
 Each Neuron sharing hardware requires two dedicated ports (Ex: Neuron_One ports `24600/24601`, Neuron_Two ports `24602/24603`, etc)
-Delete huggingface/ folder found inside `.satori/models/` after copying existing folders to P2P folder
+Delete huggingface/ folder found inside `satori/models/` after copying existing folders to P2P folder
 Remove existing headless setting from `config.yaml`
 neuron lock hash only required if `neuron lock enabled: true` in `config.yaml`
 Edit cpus and memory resource limits as needed in `docker-compose.yaml`
-To stop Neuron, navigate into `cd "%USERPROFILE%\.satori"` and run `docker compose down`
+To stop Neuron, navigate into `cd "%USERPROFILE%\satori"` and run `docker compose down`
 
 ## Windows-Specific Notes
 - The legacy Satori was typically installed in `%APPDATA%\local\Satori\`
-- The new P2P version uses `%USERPROFILE%\.satori\` (typically `C:\Users\YourUsername\.satori\`)
+- The new P2P version uses `%USERPROFILE%\satori\` (typically `C:\Users\YourUsername\satori\`)
 - Windows uses `%USERPROFILE%` instead of `~` for the home directory
 - Use `notepad` instead of `nano` for editing files
 - Use `xcopy` with `/E /I` flags for recursive directory copying

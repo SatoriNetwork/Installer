@@ -48,26 +48,26 @@ sudo ufw reload
 
 ## 8) Rename Existing Folder
 ```
-mv .satori/ .satori-original/
+mv satori/ satori-original/
 ```
 
 ## 9) Create P2P Folder
 ```
-mkdir .satori/
+mkdir satori/
 ```
 
 ## 10) Copy and Paste Existing Folders into P2P Folder
-Delete huggingface/ folder found inside `.satori/models/` after copying existing folders to P2P folder with `rm .satori/models/huggingface -r`
+Delete huggingface/ folder found inside `satori/models/` after copying existing folders to P2P folder with `rm satori/models/huggingface -r`
 ```
-cp .satori-original/config/ -r .satori/
-cp .satori-original/wallet/ -r .satori/
-cp .satori-original/data/ -r .satori/
-cp .satori-original/models/ -r .satori/
+cp satori-original/config/ -r satori/
+cp satori-original/wallet/ -r satori/
+cp satori-original/data/ -r satori/
+cp satori-original/models/ -r satori/
 ```
 
 ## 11) Navigate into P2P Folder and Edit Config File
 ```
-cd ~/.satori
+cd ~/satori
 nano config/config.yaml
 ```
 
@@ -112,10 +112,10 @@ services:
     restart: unless-stopped
     network_mode: "host"
     volumes:
-      - ~/.satori/config:/Satori/Neuron/config
-      - ~/.satori/wallet:/Satori/Neuron/wallet
-      - ~/.satori/data:/Satori/Neuron/data
-      - ~/.satori/models:/Satori/Neuron/models
+      - ~/satori/config:/Satori/Neuron/config
+      - ~/satori/wallet:/Satori/Neuron/wallet
+      - ~/satori/data:/Satori/Neuron/data
+      - ~/satori/models:/Satori/Neuron/models
     environment:
       - ENV=prod
     deploy: # change or remove as desired 
@@ -153,9 +153,9 @@ cat engine.log
 ## Important Extras
 Enter each IP Table command in order (In case of error, reset IP Table with `iptables -F` )
 Each Neuron sharing hardware requires two dedicated ports (Ex: Neuron_One ports `24600/24601`, Neuron_Two ports `24602/24603`, etc)
-Delete huggingface/ folder found inside `.satori/models/` after copying existing folders to P2P folder with `rm .satori/models/huggingface -r`
+Delete huggingface/ folder found inside `satori/models/` after copying existing folders to P2P folder with `rm satori/models/huggingface -r`
 Remove existing headless setting from `config.yaml`
 neuron lock hash only required if `neuron lock enabled: true` in `config.yaml`
 Edit cpus and memory resource limits as needed in `docker-compose.yaml`
-To stop Neuron, navigate into `cd ~/.satori/` and run `docker compose down`
+To stop Neuron, navigate into `cd ~/satori/` and run `docker compose down`
 
