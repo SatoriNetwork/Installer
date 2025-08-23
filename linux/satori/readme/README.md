@@ -28,7 +28,7 @@ cd satori/zips/linux
 
 Or from the website:
 ```bash
-wget -P ~/ https://stage.satorinet.io/static/download/linux/satori.zip
+wget -P ~/ https://stage.satorinet.io/static/download/linux/linux.zip
 ```
 
 ### 2. Configure Ports

@@ -23,7 +23,7 @@ cd satori/zips/windows
 
 Or from the website:
 ```bash
-wget -P ~/ https://stage.satorinet.io/static/download/windows/satori.zip
+wget -P ~/ https://stage.satorinet.io/static/download/windows/windows.zip
 ```
 
 ### 2. Configure Ports

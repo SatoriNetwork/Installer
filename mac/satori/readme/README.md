@@ -21,7 +21,7 @@ cd satori/zips/mac
 
 Or from the website:
 ```bash
-wget -P ~/ https://stage.satorinet.io/static/download/mac/satori.zip
+wget -P ~/ https://stage.satorinet.io/static/download/mac/mac.zip
 ```
 
 ### 2. Configure Ports
